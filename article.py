@@ -16,5 +16,5 @@ class Article(Super_Article_Class):
 	def __init__(self, url):
 		super(Article,self).__init__(url)
 
-	def test_print(self):
-		print('I\'m testing my extension...')
+	def print_keywords(self):
+		print(self.keywords)

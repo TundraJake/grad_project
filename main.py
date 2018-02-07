@@ -19,7 +19,7 @@ def main():
     first_article = article.Article(url=url)
 
     print(first_article.url)
-    first_article.test_print()
+    first_article.print_keywords()
     
 
 if __name__ == "__main__":
