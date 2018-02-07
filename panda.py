@@ -25,4 +25,4 @@ def run():
     end = dt.datetime(2012,12,30)
 
     item = web.DataReader('MSFT', 'morningstar', start, end)
-    print(item)
+    
