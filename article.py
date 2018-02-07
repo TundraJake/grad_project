@@ -14,7 +14,7 @@ from newspaper import Article as Super_Article_Class
 class Article(Super_Article_Class):
 
 	def __init__(self, url):
-		super(Article, self).__init__(url)
+		super().__init__(url)
 		self.complete_build()
 
 	# Sets object for use.
