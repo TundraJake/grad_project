@@ -19,27 +19,10 @@ import pymysql
 # padnas uses numpy, set seed for entire pandas library. 
 
 def run():
-    np.random.seed(1)
-
-    # Creates a a series of 100 random values.
-    s = pd.Series(np.random.randn(100))
-
-    for item in s:
-        print(item)
-
-    print(s.values)
-    print('', s.shape)
-    print('value counts', s.value_counts)
-
     df = pd.DataFrame()
-
-    for i in range(3):
-        df+=pd.DataFrame(pd.Series(np.arange(i,i+10)))
-
-    print(df.shape)
 
     start = dt.datetime(2010,1,1)
     end = dt.datetime(2012,12,30)
 
-    item = web.DataReader('MSFT', 'yahoo', start, end)
+    item = web.DataReader('MSFT', 'morningstar', start, end)
     print(item)

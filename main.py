@@ -8,7 +8,6 @@ main.py - Starting point of the entire project.
 # File panda.py import
 import panda
 
-
 def main():
     panda.run()
 
