@@ -9,14 +9,12 @@ File name needs to change when appropriate behavior is chosen!
 *****
 
 '''
-import newspaper
+from newspaper import Article as Super_Article_Class
 
-
-class Newspaper(object):
+class Article(Super_Article_Class):
 
 	def __init__(self, url):
-		self.url = url
+		super(Article,self).__init__(url)
 
-	def get_articles(self):
-		return newspaper.build(self.url, memoize_articles=False)
-
+	def test_print(self):
+		print('I\'m testing my extension...')
