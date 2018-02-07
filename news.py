@@ -11,10 +11,10 @@ File name needs to change when appropriate behavior is chosen!
 '''
 import newspaper
 
-class Newspaper(object):
+class Newspaper(newspaper):
 
 	def __init__(self, url):
-		self.url = url
+		super(Newspaper, self).__init__(url)
 
 	def get_articles(self):
 		return newspaper.build(self.url, memoize_articles=False)
