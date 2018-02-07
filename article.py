@@ -14,9 +14,10 @@ from newspaper import Article as Super_Article_Class
 class Article(Super_Article_Class):
 
 	def __init__(self, url):
-		super(Article,self).__init__(url)
+		super(Article, self).__init__(url)
 		self.complete_build()
 
+	# 
 	def complete_build(self):
 		self.build()
 		self.download()
