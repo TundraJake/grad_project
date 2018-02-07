@@ -13,7 +13,7 @@ from newspaper import Article
 
 
 def main():
-    url = 'https://www.cnn.com/2018/02/06/politics/government-shutdown-immigration-donald-trump/index.html'
+    url = 'http://money.cnn.com/2018/02/05/investing/stock-market-today-dow-jones/index.html'
     first_article = article.Article(url=url)
 
     first_article.print_title()
