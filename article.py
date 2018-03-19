@@ -25,7 +25,6 @@ class Article(Super_Article_Class):
 		self.nlp()
 
 	###### Debug ######
-
 	def print_newlines(self):
 		print('\n'*3)
 
