@@ -9,7 +9,6 @@ main.py - Starting point of the entire project.
 import panda
 import news
 import article
-from newspaper import Article
 
 
 def main():

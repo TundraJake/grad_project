@@ -16,6 +16,7 @@ class Newspaper(object):
 
 	def __init__(self, url):
 		self.url = url
+		self.get_articles(self.url, memoize_articles=False);
 
 	def get_articles(self):
 		return newspaper.build(self.url, memoize_articles=False)
