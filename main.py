@@ -12,15 +12,15 @@ import article
 
 
 def main():
-    url = 'http://money.cnn.com/2018/02/05/investing/stock-market-today-dow-jones/index.html'
-    first_article = article.Article(url=url)
-
-    first_article.print_title()
-    first_article.print_keywords()
-    first_article.print_text()
-    first_article.print_summary()
+    url = 'http://money.cnn.com'
 
     first_newspaper = news.Newspaper(url=url)
+
+    muh_articles = first_newspaper.get_articles()
+
+    for article in muh_articles:
+    	print(article.title)
+
 
 if __name__ == "__main__":
     main()
