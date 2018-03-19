@@ -35,6 +35,10 @@ class Article(Super_Article_Class):
 	def print_title(self):
 		print(self.title)
 		self.print_newlines()
+
+	def print_summary(self):
+		print(self.summary)
+		self.print_newlines()
 	
 	def print_text(self):
 		print(self.text)
