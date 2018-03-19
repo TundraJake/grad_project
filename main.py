@@ -18,6 +18,9 @@ def main():
     first_article.print_title()
     first_article.print_keywords()
     first_article.print_text()
+    first_article.print_summary()
+
+    first_newspaper = news.Newspaper(url=url)
 
 if __name__ == "__main__":
     main()
