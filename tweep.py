@@ -12,6 +12,14 @@ TODO
 '''
 import tweepy
 
+class TweetStreamListener(tweepy.StreamListener):
+
+    def on_status(self, status):
+        print(status.text)
+
+
+streamer = TweetStreamListener()
+
 key = list(open('keys.txt'))
 for k in range(len(key)):
 	key[k] = key[k].strip()
@@ -22,7 +30,8 @@ auth.set_access_token(key[2], key[3])
 api = tweepy.API(auth)
 
 public_tweets = api.home_timeline()
-for tweet in public_tweets:
-    print(tweet.text)
+# for tweet in public_tweets:
+    # print(tweet.text)
 
-
+myStream = tweepy.Stream(auth = api.auth, listener=streamer)
+myStream.filter(track=['python'])
