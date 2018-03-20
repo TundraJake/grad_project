@@ -9,6 +9,7 @@ main.py - Starting point of the entire project.
 import panda
 import news
 import article
+from newspaper import news_pool
 
 
 def main():
@@ -16,11 +17,16 @@ def main():
 
     first_newspaper = news.Newspaper(url=url)
 
-    muh_articles = first_newspaper.get_articles()
+    cnn = first_newspaper.get_sources()
 
-    for article in muh_articles:
-    	print(article.title)
+    sources = [cnn]
 
+    news_pool.set(sources, threads_per_source=2)
+    news_pool.join()
+
+    for cnn_art in cnn.articles:
+        if cnn_art.title:
+            print(cnn_art.title)
 
 if __name__ == "__main__":
     main()

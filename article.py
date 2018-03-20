@@ -19,7 +19,7 @@ class Article(Super_Article_Class):
 
 	# Sets object for use.
 	def complete_build(self):
-		self.build()
+		# self.build()
 		self.download()
 		self.parse()
 		self.nlp()
