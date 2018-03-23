@@ -22,6 +22,7 @@ def strip_list_newline(str_to_strip):
 	for ii in range(len(str_to_strip)):
 		str_to_strip[ii] = str_to_strip[ii].strip()
 
+# Authenticates to Jacob's market Twitter app.
 def authenticate():
 	key = list(open('keys.txt'))
 	strip_list_newline(key)
@@ -41,7 +42,11 @@ def main():
 	# Use below of async connection, otherwise main thread is used. 
 	# myStream.filter(track=['python'], async=True) 
 	special_words = ['DOW', 'S&P500', 'APPL', 'GOOG', 'TWTR']
-	myStream.filter(track=special_words)
+
+	# Used http://boundingbox.klokantech.com/ to filter NYC tweets about the stock market. 
+	NYC = [-76.06,43.23,-74.21,44.07]
+	# Location, because it's not well documented in the source, takes two coordinate position per point (4 total).
+	myStream.filter(track=special_words, locations=NYC)
 
 
 if __name__ == '__main__':
