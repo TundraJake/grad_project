@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
 		Y = dataset[:,8]
 		# create model
 		model = Sequential()
-		model.add(Dense(12, input_dim=8, init='uniform', activation='relu'))
+		model.add(Dense(8, input_dim=8, init='uniform', activation='relu'))
 		model.add(Dense(32, init='uniform', activation='sigmoid'))
 		model.add(Dense(64, init='uniform', activation='sigmoid'))
 		model.add(Dense(22, init='uniform', activation='sigmoid'))
@@ -42,6 +42,8 @@ class Test(unittest.TestCase):
 		rounded = [round(x[0]) for x in predictions]
 		self.__class__.test_networks.append(1)
 		print(rounded)
+
+
 
 if __name__ == '__main__':
 	unittest.main()
