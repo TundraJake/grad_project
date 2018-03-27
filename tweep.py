@@ -41,13 +41,24 @@ def main():
 	# include a very generic approach.
 	# Use below of async connection, otherwise main thread is used. 
 	# myStream.filter(track=['python'], async=True) 
-	special_words = ['DOW', 'S&P500', 'APPL', 'GOOG', 'TWTR']
+	special_words = ['DOW', 'S&P500', 'APPL', 'GOOG', 'TWTR', 'tech', 'technology', 'Nvidia', 'NVDA']
 
 	# Used http://boundingbox.klokantech.com/ to filter NYC tweets about the stock market. 
 	NYC = [-76.06,43.23,-74.21,44.07]
 	# Location, because it's not well documented in the source, takes two coordinate position per point (4 total).
+	# Still does not filter everything not related to the stock market. 
+
 	myStream.filter(track=special_words, locations=NYC)
 
 
 if __name__ == '__main__':
 	main()
+
+
+
+
+
+
+
+
+
