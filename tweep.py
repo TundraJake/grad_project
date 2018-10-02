@@ -17,7 +17,7 @@ class TweetStreamListener(tweepy.StreamListener):
     def on_status(self, status):
         print(status.text)
 
-
+# Remove newlines. 
 def strip_list_newline(str_to_strip):
 	for ii in range(len(str_to_strip)):
 		str_to_strip[ii] = str_to_strip[ii].strip()
@@ -41,13 +41,16 @@ def main():
 	# include a very generic approach.
 	# Use below of async connection, otherwise main thread is used. 
 	# myStream.filter(track=['python'], async=True) 
-	special_words = ['DOW', 'S&P500', 'APPL', 'GOOG', 'TWTR', 'tech', 'technology', 'Nvidia', 'NVDA']
+	special_words = ['DOW', 'S&P500', 'APPL', 'GOOG', 'TWTR', 'tech', 'Nvidia', 'NVDA']
 
 	# Used http://boundingbox.klokantech.com/ to filter NYC tweets about the stock market. 
-	NYC = [-76.06,43.23,-74.21,44.07]
+	# May use multiple locations, filter by news sources/people/etc. 
+	NYC = [-76.06, 43.23, -74.21, 44.07]
 	# Location, because it's not well documented in the source, takes two coordinate position per point (4 total).
 	# Still does not filter everything not related to the stock market. 
 
+
+	# TODO: Filter by english documents. 
 	myStream.filter(track=special_words, locations=NYC)
 
 

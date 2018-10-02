@@ -27,6 +27,7 @@ def main():
     for cnn_art in cnn.articles:
         if cnn_art.title:
             print(cnn_art.title)
+            print(cnn_art.summary)
 
 if __name__ == "__main__":
     main()

@@ -9,6 +9,7 @@ File name needs to change when appropriate behavior is chosen!
 *****
 
 '''
+
 from newspaper import Article as Super_Article_Class
 
 class Article(Super_Article_Class):
