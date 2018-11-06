@@ -14,15 +14,19 @@ import pandas as pd
 from pandas_datareader import data as web
 import numpy as np 
 import datetime as dt
-import pymysql
+import sqlalchemy
 
-# padnas uses numpy, set seed for entire pandas library. 
+# pandas uses numpy, set seed for entire pandas library. 
 
-def run():
-    df = pd.DataFrame()
+STOCK_SYMBOLS = ['MSFT', 'AAPL', 'NVDA']
+NUMERICAL_FINANCE_SOURCE_NAME = 'yahoo'
+data_frames = [] 
+engine = sqlalchemy.create_engine('postgres://stock:money@localhost/stock_market_data')
 
-    start = dt.datetime(2010,1,1)
-    end = dt.datetime(2012,12,30)
+def fetch_stock_data(start, end):
+    con = engine.connect()
+    for ii in range(len(STOCK_SYMBOLS)):
+        data_frames.append(web.DataReader(STOCK_SYMBOLS[ii], 'yahoo', start, end))
+        data_frames[ii].astype(np.float32)
+        data_frames[ii].to_sql(""+STOCK_SYMBOLS[ii]+"_ticker", con, if_exists='replace')
 
-    item = web.DataReader('MSFT', 'morningstar', start, end)
-    
