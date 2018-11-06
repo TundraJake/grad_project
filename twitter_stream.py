@@ -32,12 +32,12 @@ class TweetStreamListener(tweepy.StreamListener):
 		retweeted_full_text = status._json.get('retweeted_status')
 		retweeted = False
 		try:
-			text = status.extended_tweet["full_text"] + "       21345123412341234"
+			text = status.extended_tweet["full_text"]
 			retweeted = True
 		except AttributeError:
-			text = status.text + "     awerqwerqwerqerwqwer"
+			text = status.text
 
-		tweets.append((status.text, status.user.location, status.id, retweeted))
+		tweets.append((text, status.user.location, status.id, retweeted))
 
 		if len(tweets) == 100:
 			self.write_to_postgres(tweets)
@@ -50,9 +50,12 @@ class TweetStreamListener(tweepy.StreamListener):
 	
 	def write_to_postgres(self, data):
 		print("Inserting Batch: " + str(self.BATCH_COUNTER))
-		for ii in data:
-			# print(ii)
-			CURS.execute(INSERT_QUERY, ii)
+		for tweet in data:
+			try:
+				CURS.execute(INSERT_QUERY, tweet)
+			except psycopg2.Error as error:
+				print(error)
+				print(tweet)
 		CONN.commit()
 		tweets.clear()
 		self.BATCH_COUNTER += 1
