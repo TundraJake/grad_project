@@ -19,3 +19,12 @@ names accordingly.
 **Notes**:
 
 **Results**:
+
+## Date: 11/6/18
+
+**Notes**:
+
+**Results**: My twttier streamer now pulls data and stores data in a local postgres database. The streamer attempts to pull relevent information, but still pulls irrelevent tweets. That can be mitigated through two options: 
+1. Filter/curate data as it goes through the stream, attempting to gather cleaner tweets.
+2. Store the tweets, perform sentiment analysis on all tweets, and restore
+
