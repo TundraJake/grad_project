@@ -5,29 +5,27 @@ UAF Graduate Project
 main.py - Starting point of the entire project.
 
 '''
-# File panda.py import
-import panda
-import news
-import article
-from newspaper import news_pool
+from neural_network import *
+from online_data_fetcher import * 
 
+X = np.array([1,2,3])
 
 def main():
-    url = 'http://money.cnn.com'
+    
 
-    first_newspaper = news.Newspaper(url=url)
+    X = np.array([[1,1,1,1,1,1,0,0,0,0,1,1],
+                    [1,1,1,1,1,1,0,0,0,0,1,1],
+                    [1,1,1,1,1,1,0,0,0,0,1,1],
+                    [1,1,1,0,1,1,0,0,0,0,1,1],
+                    [1,0,1,1,1,1,0,0,0,0,1,1],
+                    [1,1,0,1,0,1,0,0,0,0,1,1],
+                    [1,1,1,1,0,1,0,0,0,0,1,1]])
 
-    cnn = first_newspaper.get_sources()
+    Y = np.array([1,0,0,1,1,0,1,])
 
-    sources = [cnn]
-
-    news_pool.set(sources, threads_per_source=2)
-    news_pool.join()
-
-    for cnn_art in cnn.articles:
-        if cnn_art.title:
-            print(cnn_art.title)
-            print(cnn_art.summary)
+    example_nn = Neural_Network(X.shape[1])
+    example_nn.load_data(X, Y)
+    example_nn.train()
 
 if __name__ == "__main__":
     main()
