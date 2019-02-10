@@ -32,15 +32,19 @@ class Neural_Network():
 		self.input_shape_ = input_shape
 		self.x_train_ = None
 		self.y_train_ = None
+
 		self.x_test_ = None
+		self.y_test_ = None
 
 		self.__add_layers()
 
 	def __add_layers(self):
-		self.model.add(Dense(self.input_shape_, input_shape=(self.input_shape_,), activation='relu'))
-		self.model.add(Dense(20, activation='relu'))
-		self.model.add(Dense(14, activation='relu'))
-		self.model.add(Dense(1, activation='sigmoid'))
+		self.model.add(Dense(1024, use_bias=True, bias_initializer='zeros', input_shape=(self.input_shape_,), activation='relu'))
+		# self.model.add(Dense(1024, activation='relu'))
+		self.model.add(Dense(512, activation='relu'))
+		self.model.add(Dense(256, activation='relu'))
+		self.model.add(Dense(128, activation='relu'))
+		self.model.add(Dense(1, activation='relu'))
 
 	def get_x_training_set(self):
 		return self.x_train_
@@ -48,13 +52,16 @@ class Neural_Network():
 	def get_y_training_set(self):
 		return self.y_train_
 
-	def load_data(self, x_train, y_train):
+	def set_data(self, x_train, y_train, x_test, y_test):
 		self.x_train_ = x_train
 		self.y_train_ = y_train
+		self.x_test_ = x_test
+		self.y_test_ = y_test
 
 	def train(self):
-		self.model.compile(loss='binary_crossentropy', optimizer=keras.optimizers.SGD(lr=1.0), metrics=['accuracy'])
-		self.model.fit(self.x_train_, self.y_train_, epochs=75, batch_size=1)
+		opt = keras.optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9,)
+		self.model.compile(loss='mean_squared_error', optimizer=opt,  metrics=['accuracy'])
+		self.model.fit(self.x_train_, self.y_train_, epochs=10, batch_size=256, validation_data=(self.x_test_, self.y_test_))
 
 	def evaulate(self):
 		scores = self.model.evaluate(self.x_train_, self.y_train_, verbose=0)
@@ -77,3 +84,6 @@ class Neural_Network():
 
 	def predict(self):
 		print()
+
+	def summary(self):
+		self.model.summary()
