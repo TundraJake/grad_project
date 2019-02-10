@@ -63,6 +63,7 @@ def main():
 
     example_nn.summary()
     example_nn.set_data(X, Y, X_test, Y_test)
+
     example_nn.train()
 
 if __name__ == "__main__":
