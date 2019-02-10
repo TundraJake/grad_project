@@ -12,14 +12,17 @@ TODO
 '''
 import tweepy
 from tweepy import API
-import panda
 import twitter
 import psycopg2
-
+from dateutil.parser import parse
+import datetime
 tweets = []
+
 CONN = psycopg2.connect(host='localhost', user='stock', password='money', dbname='stock_market_data')
 CURS = CONN.cursor()
-INSERT_QUERY = "INSERT INTO \"Tweets\" (text, location, user_id, retweeted) VALUES (%s, %s, %s, %s)"
+INSERT_QUERY = """INSERT INTO \"Tweets\" 
+				(text, location, user_id, retweeted, retweet_count, favorite_count, reply_count, quote_count, utc_date_created) 
+				VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
 class TweetStreamListener(tweepy.StreamListener):
 
@@ -31,15 +34,30 @@ class TweetStreamListener(tweepy.StreamListener):
 	def on_status(self, status):
 		retweeted_full_text = status._json.get('retweeted_status')
 		retweeted = False
+
 		try:
 			text = status.extended_tweet["full_text"]
+			# print(text)
 			retweeted = True
 		except AttributeError:
 			text = status.text
 
-		tweets.append((text, status.user.location, status.id, retweeted))
+		date = status.created_at
+		# date = datetime.strftime('%Y-%M-%D')
 
-		if len(tweets) == 100:
+
+		tweets.append(
+					(text, 
+					status.user.location, 
+					status.id, 
+					retweeted,
+					status.retweet_count,
+					status.favorite_count,
+					status.reply_count,
+					status.quote_count,
+					str(date)))
+
+		if len(tweets) == 10:
 			self.write_to_postgres(tweets)
 		
 
@@ -55,7 +73,6 @@ class TweetStreamListener(tweepy.StreamListener):
 				CURS.execute(INSERT_QUERY, tweet)
 			except psycopg2.Error as error:
 				print(error)
-				print(tweet)
 		CONN.commit()
 		tweets.clear()
 		self.BATCH_COUNTER += 1
@@ -84,7 +101,7 @@ def main():
 	# include a very generic approach.
 	# Use below of async connection, otherwise main thread is used. 
 	# myStream.filter(track=['python'], async=True) 
-	special_words = ['NVDA', 'AAPL', 'Apple', 'market', 'stocks', 'prices']
+	special_words = ['NVDA', 'AAPL', 'Apple', 'market', 'stocks', 'bull', 'bullish', 'bear', 'bearish']
 
 	# Used http://boundingbox.klokantech.com/ to filter NYC tweets about the stock market. 
 	# May use multiple locations, filter by news sources/people/etc. 
