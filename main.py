@@ -69,9 +69,9 @@ def lstm_sp500_model():
     plt.plot(prediction)
     plt.plot(Y_test)
     plt.title('SP500 Prediction vs Actual')
-    plt.ylabel('pred (%)')
-    plt.xlabel('60 second ticks')
-    plt.legend(['prediction', 'actual'], loc='upper left')
+    plt.ylabel('Stock Price')
+    plt.xlabel('Minutes')
+    plt.legend(['Prediction', 'Actual'], loc='upper left')
     plt.show()
 
 def lstm_01lr_sp500_model():
@@ -112,19 +112,19 @@ def lstm_01lr_sp500_model():
     # example_nn.evaluate()
 
     # example_nn.write_history_to_file()
-    example_nn.create_and_load_model('model.h5')
+    example_nn.create_and_load_model('results/lstm_01lr_sp500_weights.h5')
     prediction = example_nn.predict()
     # prediction = le.inverse_transform(prediction)
     
     print(type(X_test))
 
-    # print(X_test[0])
+    print(X_test[0])
     plt.plot(prediction)
     plt.plot(Y_test)
     plt.title('SP500 Prediction vs Actual')
-    plt.ylabel('pred (%)')
-    plt.xlabel('minutes')
-    plt.legend(['prediction', 'actual'], loc='upper left')
+    plt.ylabel('Stock Price')
+    plt.xlabel('Minutes')
+    plt.legend(['Prediction', 'Actual'], loc='upper left')
     plt.show()
 
 
@@ -181,6 +181,44 @@ def lstm_01lr_aapl_sentiment():
     data = scaler.fit_transform(data)
     print(data)
 
+    n = data.shape[0] 
+    train_start = 0
+    train_end = int(np.floor(0.8*n))
+
+    test_start = train_end
+    test_end = n
+
+    data_train = data[np.arange(train_start, train_end), :]
+    data_test = data[np.arange(test_start, test_end), :]
+
+    X = data_train[:, 1:]
+    X = np.reshape(X, (X.shape[0], X.shape[1], 1))
+    Y = data_train[:, 0]
+
+    X_test = data_test[:, 1:]
+    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+    Y_test = data_test[:, 0]
+
+    example_nn = Classifier_Neural_Network(X, Y, X_test, Y_test)
+    example_nn.train()
+    example_nn.write_weights_to_h5()
+    example_nn.graph_accuracy()
+
+    # example_nn.model = None
+    example_nn.create_and_load_model('model.h5')
+    prediction = example_nn.predict()
+
+    print(type(X_test))
+
+    print(X_test[0])
+    plt.plot(prediction)
+    plt.plot(Y_test)
+    plt.title('SP500 Prediction vs Actual')
+    plt.ylabel('Stock Price')
+    plt.xlabel('Tweet #')
+    plt.legend(['Prediction', 'Actual'], loc='upper left')
+    plt.show()
+
 
 
 def main():
@@ -188,6 +226,7 @@ def main():
     # lstm_01lr_sp500_model()
     # get_available_gpus()
     lstm_01lr_aapl_sentiment()
+    
 
 
 if __name__ == "__main__":

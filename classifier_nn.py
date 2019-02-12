@@ -19,7 +19,7 @@ import numpy as np
 import nltk
 
 
-class Neural_Network():
+class Classifier_Neural_Network():
 
 	def __init__(self, X, Y, X_test, Y_test):
 		npr.seed(1)
@@ -47,6 +47,7 @@ class Neural_Network():
 		model.add(Dense(units = 1))
 		return model
 
+
 	def get_x_training_set(self):
 		return self.x_train_
 
@@ -72,9 +73,9 @@ class Neural_Network():
 
 	def train(self):
 		opt = keras.optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9,)
-		self.model.compile(loss='mean_squared_error', optimizer='adam')
+		self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 		self.__checkpoint()
-		self.history_ = self.model.fit(self.get_x_training_set(), self.get_y_training_set(), epochs=40, batch_size=3000, verbose=1)
+		self.history_ = self.model.fit(self.get_x_training_set(), self.get_y_training_set(), epochs=10, batch_size=30, verbose=1)
 		# print(self.history_.history.keys())
 
 	def __checkpoint(self):
@@ -123,11 +124,12 @@ class Neural_Network():
 	def write_history_to_file(self):
 		numpy_loss_history = np.array(loss_history)
 		np.savetxt("loss_history.txt", numpy_loss_history, delimiter=",")
-	# def write_accuracy(self):
-		# plt.plot(self.history_.history['acc'])
+
+	def graph_accuracy(self):
+		plt.plot(self.history_.history['acc'])
 		# plt.plot(self.history_.history['val_acc'])
-		# plt.title('model accuracy')
-		# plt.ylabel('accuracy')
-		# plt.xlabel('epoch')
-		# plt.legend(['train', 'test'], loc='upper left')
-		# plt.show()
+		plt.title('model accuracy')
+		plt.ylabel('accuracy')
+		plt.xlabel('epoch')
+		plt.legend(['train'], loc='upper left')
+		plt.show()
