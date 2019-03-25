@@ -4,18 +4,15 @@ Jacob McKenna
 UAF Graduate Project
 panda.py - Simple import and testing file for learning pandas.
 
-***** 
-File name needs to change when appropriate behavior is chosen!
-TODO
-*****
-
 '''
+
 import tweepy
 from tweepy import API
 import twitter
 import psycopg2
 from dateutil.parser import parse
 import datetime
+
 tweets = []
 
 CONN = psycopg2.connect(host='localhost', user='stock', password='money', dbname='stock_market_data')
