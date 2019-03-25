@@ -6,8 +6,9 @@ main.py - Starting point of the entire project.
 
 '''
 
-from neural_network import *
-from classifier_nn import *
+from models.lstm_nn import LSTM_NN
+
+
 from online_data_fetcher import * 
 import pandas as pd
 
@@ -53,7 +54,7 @@ def lstm_sp500_model():
     X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
     Y_test = data_test[:, 0]
 
-    example_nn = Neural_Network(X, Y, X_test, Y_test)
+    example_nn = Feed_Forward_NN(X, Y, X_test, Y_test)
 
     # example_nn.train()
     # example_nn.write_weights_to_h5()
@@ -105,7 +106,7 @@ def lstm_01lr_sp500_model():
     X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
     Y_test = data_test[:, 0]
 
-    example_nn = Neural_Network(X, Y, X_test, Y_test)
+    example_nn = Feed_Forward_NN(X, Y, X_test, Y_test)
 
     # example_nn.train()
     # example_nn.write_weights_to_h5()
@@ -199,7 +200,7 @@ def lstm_01lr_aapl_sentiment():
     X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
     Y_test = data_test[:, 0]
 
-    example_nn = Classifier_Neural_Network(X, Y, X_test, Y_test)
+    example_nn = LSTM_NN(X, Y, X_test, Y_test)
     example_nn.train()
     example_nn.write_weights_to_h5()
     example_nn.graph_accuracy()
