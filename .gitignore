@@ -1,3 +1,6 @@
 __pycache__/
 keys.txt
 data/
+results/
+journal_entries/
+.vscode/
