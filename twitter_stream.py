@@ -81,14 +81,14 @@ class TweetStreamListener(tweepy.StreamListener):
 
 
 # Remove newlines. 
-def strip_list_newline(str_to_strip):
+def strip_newline_list(str_to_strip):
 	for ii in range(len(str_to_strip)):
 		str_to_strip[ii] = str_to_strip[ii].strip()
 
 # Authenticates to Jacob's market Twitter app.
 def authenticate():
 	key = list(open('keys.txt'))
-	strip_list_newline(key)
+	strip_newline_list(key)
 	auth = tweepy.OAuthHandler(key[0], key[1])
 	auth.set_access_token(key[2], key[3])
 	api = tweepy.API(auth)
