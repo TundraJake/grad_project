@@ -79,8 +79,6 @@ class TweetStreamListener(tweepy.StreamListener):
 		CONN.commit()
 		tweets.clear()
 
-
-# Remove newlines. 
 def strip_newline_list(str_to_strip):
 	for ii in range(len(str_to_strip)):
 		str_to_strip[ii] = str_to_strip[ii].strip()
