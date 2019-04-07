@@ -35,21 +35,17 @@ class TweetStreamListener(tweepy.StreamListener):
 		self.api = api or API()
 	
 	def on_status(self, status):
-		print(status._json)
-		print('\n'*20)
 		retweeted_full_text = status._json.get('retweeted_status')
 		retweeted = False
 
 		try:
 			text = status.extended_tweet['full_text']
-			# print(text)
+
 			retweeted = True
 		except AttributeError:
 			text = status.text
 
 		date = status.created_at
-		# date = datetime.strftime('%Y-%M-%D')
-
 
 		tweets.append(
 					(text, 
@@ -71,7 +67,7 @@ class TweetStreamListener(tweepy.StreamListener):
 
 	def on_error(self, status_code):
 		if status_code == 420:
-			#returning False in on_data disconnects the stream
+			#returning False if on_data disconnects the stream
 			return False
 	
 	def write_to_postgres(self, data):
@@ -79,7 +75,7 @@ class TweetStreamListener(tweepy.StreamListener):
 			try:
 				CURS.execute(INSERT_QUERY, tweet)
 			except psycopg2.Error as error:
-				print(error)
+				continue
 		CONN.commit()
 		tweets.clear()
 
@@ -116,17 +112,14 @@ def on_status(statuses):
 	tweets = []
 	for status in statuses: 
 		full_text = status._json.get('full_text')
-		print(full_text)
 		retweeted = False
 
 		try:
 			retweeted = status._json.get('retweeted')
-			print(retweeted)
 		finally:
-			print('yuppers')
+			continue
 
 		date = status.created_at
-		# date = datetime.strftime('%Y-%M-%D')
 
 		tweets.append(
 					(full_text, 
