@@ -1,11 +1,3 @@
-'''
-
-Jacob McKenna
-UAF Graduate Project
-panda.py - Simple import and testing file for learning pandas.
-
-'''
-
 import tweepy
 from tweepy import API
 import twitter
@@ -44,6 +36,7 @@ class TweetStreamListener(tweepy.StreamListener):
 			retweeted = True
 		except AttributeError:
 			text = status.text
+# Remove newlines. 
 
 		date = status.created_at
 
