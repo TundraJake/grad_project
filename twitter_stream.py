@@ -28,15 +28,19 @@ class TweetStreamListener(tweepy.StreamListener):
 	
 	def on_status(self, status):
 		retweeted_full_text = status._json.get('retweeted_status')
+		
 		retweeted = False
+		text = None
 
 		try:
 			text = status.extended_tweet['full_text']
 
 			retweeted = True
-		except AttributeError:
+		except AttributeError as e:
+			# print('\n'*20)
+			# print(status)
+			# print(' \n'*20)
 			text = status.text
-# Remove newlines. 
 
 		date = status.created_at
 
@@ -51,7 +55,8 @@ class TweetStreamListener(tweepy.StreamListener):
 					status.quote_count,
 					str(date)))
 
-		print(len(tweets))
+		# print(text)
+		# print(len(tweets))
 		if len(tweets) == 10:
 			print('Inserting Batch: ' + str(self.BATCH_COUNTER))
 			self.BATCH_COUNTER += 1
@@ -91,7 +96,8 @@ def stream():
 
 	myStream = tweepy.Stream(auth=api.auth, listener=streamer)
 
-	special_words = ['AAPL', 'Apple', 'market', 'stocks', 'bull', 'bullish', 'bear', 'bearish']
+	special_words = ['$aapl', '#aapl', '@aapl', '@apple', 'Apple', 
+					'apple', 'tech', 'stock', 'market']
 
 	myStream.filter(languages=["en"], track=special_words)
 
@@ -108,7 +114,7 @@ def on_status(statuses):
 		try:
 			retweeted = status._json.get('retweeted')
 		finally:
-			continue
+			retweeted = False
 
 		date = status.created_at
 
@@ -162,8 +168,8 @@ def get_users_tweets():
 
 
 def main():
-	# stream()
-	get_users_tweets()
+	stream()
+	# get_users_tweets()
 
 if __name__ == '__main__':
 	main()
