@@ -1,15 +1,3 @@
-'''
-
-Jacob McKenna
-UAF Graduate Project
-panda.py - Simple import and testing file for learning pandas.
-
-***** 
-File name needs to change when appropriate behavior is chosen!
-*****
-
-'''
-
 import pandas as pd
 from pandas_datareader import data as web
 import numpy as np 
@@ -33,12 +21,6 @@ END_DATE = '2016-06-15'
 
 PREPARED_DATASET_FILE_LOCATION = 'data/apple_data.xlsx'
 
-
-
-def get_result_file_count():
-    cpt = sum([len(files) for r, d, files in os.walk(DIR)])
-    return cpt
-
 def set_dataframes(start, end):
     for ii in range(len(STOCK_SYMBOLS)):
         data_frames.append(web.DataReader(STOCK_SYMBOLS[ii], FINANCE_SOURCE_NAME, start, end))
@@ -53,6 +35,8 @@ def fetch_stock_data():
         data_frames[ii]['Date'] = data_frames[ii]['Date'].dt.date
         data_frames[ii].to_sql(""+STOCK_SYMBOLS[ii]+"_ticker", con, if_exists='replace')
 
+
+def load_and_write_online_dataset():
     prepared_tweets_ = pd.read_excel(PREPARED_DATASET_FILE_LOCATION, 'Stream')
     prepared_tweets_ = prepared_tweets_[['Tweet Id', 'Tweet content', 'Is a RT', 'Date']]
     prepared_tweets_.to_sql('apple_data', con, if_exists='replace')
@@ -94,9 +78,11 @@ def plot_data():
 
         plt.show()
 
-def run():
+def main():
     set_dataframes(START_DATE, END_DATE)
     fetch_stock_data()
+    load_and_write_online_dataset()
     plot_data()
 
-run()
+if __name__ == "__main__":
+    main()
