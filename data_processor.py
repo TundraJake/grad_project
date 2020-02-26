@@ -1,4 +1,3 @@
-from sqlalchemy import create_engine
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler, \
                                 StandardScaler, \
@@ -10,6 +9,7 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.preprocessing.text import Tokenizer
 
 import re
+import os
 
 from textblob import TextBlob, Blobber
 from textblob.sentiments import NaiveBayesAnalyzer
@@ -30,22 +30,50 @@ vectorizer = CountVectorizer(stop_words=["i", "me", "my", "myself", "we", "our",
 "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", 
 "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"])
 
-DIR = 'data/preprocessed/'
-PREPARED_DATASET_FILE = DIR + 'prepped_data_time_series'
-PREPARED_DAILY_DATASET_FILE = DIR + 'prepped_data_daily_time_series'
-FILE_TYPE = '.csv'
+DOTCSV = '.csv'
+DOTTXT = '.txt'
 
-ENGINE = create_engine('postgresql://stock:money@localhost:5432/stock_market_data')
+DATA_DIR = 'data/stocknet-dataset/'
+PRICE_PREPROCESSED_DIR = DATA_DIR + 'price/preprocessed/'
+TWEET_PREPROCESSED_DIR = DATA_DIR + 'tweet/preprocessed/'
 
 tb = Blobber(analyzer=NaiveBayesAnalyzer())
 
 class Data_Processor(object):
 
-    def __init__(self):
-        self.user_tweets_ = pd.read_sql(DATA_QUERY, ENGINE)
-        self.numerical_ = pd.read_sql(NUMERICAL_QUERY, ENGINE)
-        self.streamed_tweets_ = pd.read_sql(STREAMED_TWEETS_QUERY, ENGINE)
+    def __init__(self, symbol):
+        csv_file = PRICE_PREPROCESSED_DIR + symbol + DOTTXT
+        tweets_folder = TWEET_PREPROCESSED_DIR + symbol+ '/' 
 
+        self.symbol_times_series = None
+        try:
+            self.symbol_times_series = pd.read_csv(csv_file, sep=" ")
+        except:
+            print(f"Error for {symbol}.")
+            print(sys.exc_info())
+            sys.exit()
+
+        self.user_tweets_ = None
+        try:
+            # Store in list first.
+            tmp_list = []
+            for filename in os.listdir(tweets_folder):
+                df = pd.read_json(tweets_folder + filename, lines = True)
+                tmp_list.append(df)
+
+            self.user_tweets_ = pd.concat(tmp_list, axis=0, ignore_index = True)
+
+        except FileNotFoundError:
+            print(f"""
+            No file for symbol \"{symbol}\". 
+            File name/location: {tweets_folder}""")
+            sys.exit()
+       
+        except:
+            print(f"Error for {symbol}.")
+            print(sys.exc_info())
+            sys.exit()
+        
         self.user_tweets_word_counts_ = None
         self.user_tweets_document_count_ = 0
         self.user_tweets_word_index_ = None
@@ -53,6 +81,10 @@ class Data_Processor(object):
         self.vectorized_user_tweets_ = None
 
         self.user_tweets_sentiment_ = []
+
+        # Sanity checks.
+        assert self.user_tweets_.columns[0] == "created_at", f"Expected \"created_at\", got {self.user_tweets_.columns[0]}"
+
 
     def __summarize_user_tweets(self, tweets):
         t = Tokenizer()
@@ -63,7 +95,6 @@ class Data_Processor(object):
         self.user_tweets_word_index_ = t.word_index
         self.user_tweets_word_docs_ = t.word_docs
     
-
     def print_tweet_counts(self):
         print("Select User Tweets", self.user_tweets_document_count_)
 
@@ -71,7 +102,7 @@ class Data_Processor(object):
         print(self.user_tweets_)
 
     def print_numerical(self):
-        print(self.numerical_)
+        print(self.symbol_times_series)
     
     def print_streamed_tweets(self):
         print(self.streamed_tweets_)
@@ -120,13 +151,11 @@ class Data_Processor(object):
         return 10000*dt_time.year + 100*dt_time.month + dt_time.day
 
     def __build_file_format_string(self, filename, batch_num, file_set):
-        return filename + file_set + str(batch_num) + FILE_TYPE
-     
-    def __build_dataframe_objects(self):
-        self.__build_user_dataframe_obect(PREPARED_DATASET_FILE)
+        return filename + file_set + str(batch_num) + DOTCSV
 
     def process(self):
-        self.__clean_tweets()
+        print()
+        #self.__clean_tweets()
 
     def __clean_tweets(self):
         # Remove row and bad data if any.
@@ -146,5 +175,5 @@ class Data_Processor(object):
         self.__summarize_user_tweets(tweets)
 
 
-data = Data_Processor()
+data = Data_Processor("AAPL")
 data.process()
