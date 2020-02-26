@@ -1,2 +1,6 @@
-# market_prediction
-Graduate project - Algorithms using NN to predict stock price movements. 
+# Stock Market Prediction using Neural Networks
+
+
+
+# Resources
+* Dataset - https://github.com/yumoxu/stocknet-dataset
