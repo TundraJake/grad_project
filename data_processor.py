@@ -39,13 +39,28 @@ class TweetFrame(object):
         self.user_tweets_ = self.__set_tweet_data(symbol, tweets_folder)
 
         # Finalize a prepared dataset
-        self.nn_ready_data = pd.DataFrame()
+        self.processed_so_far_ = pd.DataFrame()
 
         pos_vals, neg_vals = self.__determine_tweet_sentiment()
-        self.nn_ready_data['pos_val'] = pos_vals
-        self.nn_ready_data['neg_val'] = neg_vals
-        self.nn_ready_data['date'] = self.user_tweets_['created_at'].dt.date
+        self.user_tweets_['pos_val'] = pos_vals
+        self.user_tweets_['neg_val'] = neg_vals
+
+
+        self.processed_so_far_['pos_val'] = pos_vals
+        self.processed_so_far_['neg_val'] = neg_vals
+        self.processed_so_far_['date'] = self.user_tweets_['created_at'].dt.date
+
+        self.final_qm = self.__convert_to_daily_segments()
         
+    def __convert_to_daily_segments(self):
+        df = self.processed_so_far_
+        dates = sorted(df.date.unique())
+        print(dates)
+        for date in dates: 
+            rows = df.loc[df['date'] == date]
+            print(rows)
+        
+
     def __format_date(self):
         return self.user_tweets_['created_at'].date()
             
@@ -79,7 +94,7 @@ class TweetFrame(object):
     
     def __calculate_pos_neg_ratio(self):
         P100 = 1.0
-        df = self.nn_ready_data
+        df = self.user_tweets_
         num_of_rows = df.shape[0]
         num_of_pos_tweets = len(df[df['pos_val'] > .5 ].values.tolist())
         pos_ratio = num_of_pos_tweets / num_of_rows
@@ -89,8 +104,7 @@ class TweetFrame(object):
     def print_tweets_statistics(self):
         pos_ratio, neg_ratio = self.__calculate_pos_neg_ratio()
         print('Number of tweets: ', len(self.user_tweets_))
-        print('Document Count:', self.user_tweets_document_count_)
-        print('Dataframe stats: ', self.nn_ready_data.describe())
+        print('Dataframe stats before final dataset: ', self.processed_so_far_.describe())
         print('Percent Tweets that are positive: ', pos_ratio)
         print('Percent Tweets that are negative: ', neg_ratio)
     
