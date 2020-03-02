@@ -1,4 +1,5 @@
 import pandas as pd
+pd.set_option('display.expand_frame_repr', False)
 from sklearn.preprocessing import MinMaxScaler, \
                                 StandardScaler, \
                                 LabelEncoder as le
@@ -23,16 +24,15 @@ DOTTXT = '.txt'
 
 DATA_DIR = 'data/stocknet-dataset/'
 PRICE_PREPROCESSED_DIR = DATA_DIR + 'price/preprocessed/'
+PRICE_RAW_DIR = DATA_DIR + 'price/raw/'
 TWEET_PREPROCESSED_DIR = DATA_DIR + 'tweet/preprocessed/'
 TWEET_RAW_DIR = DATA_DIR + 'tweet/raw/'
-
-tb = Blobber(analyzer=NaiveBayesAnalyzer())
 
 class TweetFrame(object):
 
     def __init__(self, symbol):
         # Init
-        csv_file = PRICE_PREPROCESSED_DIR + symbol + DOTTXT
+        csv_file = PRICE_RAW_DIR + symbol + DOTCSV
         tweets_folder = TWEET_PREPROCESSED_DIR + symbol+ '/' 
 
         self.times_series_ = self.__set_price_data(symbol, csv_file)
@@ -45,21 +45,51 @@ class TweetFrame(object):
         self.user_tweets_['pos_val'] = pos_vals
         self.user_tweets_['neg_val'] = neg_vals
 
-
         self.processed_so_far_['pos_val'] = pos_vals
         self.processed_so_far_['neg_val'] = neg_vals
         self.processed_so_far_['date'] = self.user_tweets_['created_at'].dt.date
 
-        self.final_qm = self.__convert_to_daily_segments()
-        
+        self.processed_so_far_ = self.__convert_to_daily_segments()
+        self.__merge_time_series()
+
+    def __merge_time_series(self):
+        self.times_series_.rename(columns={'Date': 'date'}, inplace=True)
+
+        # self.times_series_ = self.times_series_.set_index('date')
+        # self.processed_so_far_ = self.processed_so_far_.set_index('date')
+
+        ### Ensure the types are consistent. If this is not called, merge will not work.
+        self.processed_so_far_.date = self.processed_so_far_.date.astype(str)
+        self.times_series_.date = self.times_series_.date.astype(str)
+
+        # print(self.times_series_)
+        # df = self.processed_so_far_.merge(self.times_series_, left_on='date', right_on='date', how='left')
+        # df = pd.concat([self.processed_so_far_, self.times_series_], axis=1, join='inner')
+        df = pd.merge(self.processed_so_far_, self.times_series_, how='inner')
+        df = df.dropna()
+        df = df.reset_index(drop=True)
+        df = df.drop(columns=['date'])
+        print(df)
+        # print(self.processed_so_far_.columns, self.times_series_.columns)
+        self.processed_so_far_ = df
+                
     def __convert_to_daily_segments(self):
         df = self.processed_so_far_
         dates = sorted(df.date.unique())
-        print(dates)
-        for date in dates: 
+        tmp_df = pd.DataFrame(columns=['daily_pos_avg', 'daily_neg_avg', 'date'])
+        for index, date in enumerate(dates): 
             rows = df.loc[df['date'] == date]
-            print(rows)
-        
+            pos_total = rows['pos_val'].sum()
+            neg_total = rows['neg_val'].sum()
+            num_rows = rows.shape[0]
+            pos_avg = pos_total/num_rows
+            neg_avg = neg_total/num_rows
+            # TODO: time this
+            tmp_df = tmp_df.append({'daily_pos_avg': pos_avg, 
+                            'daily_neg_avg': neg_avg, 
+                            'date': date}, ignore_index=True)
+        print(tmp_df)
+        return tmp_df
 
     def __format_date(self):
         return self.user_tweets_['created_at'].date()
@@ -86,7 +116,7 @@ class TweetFrame(object):
 
     def __set_price_data(self, symbol, file):
         try:
-            return pd.read_csv(file, sep=" ")
+            return pd.read_csv(file, sep=",")
         except:
             print(f'Error in __set_price_data for {symbol}.')
             print(sys.exc_info())
@@ -107,6 +137,7 @@ class TweetFrame(object):
         print('Dataframe stats before final dataset: ', self.processed_so_far_.describe())
         print('Percent Tweets that are positive: ', pos_ratio)
         print('Percent Tweets that are negative: ', neg_ratio)
+        print('Set so far: \n', self.processed_so_far_)
     
     def __determine_tweet_sentiment(self):
         POS_SENTIMENT = 1
@@ -127,4 +158,4 @@ class TweetFrame(object):
 
 
 data = TweetFrame('AAPL')
-data.print_tweets_statistics()
+# data.print_tweets_statistics()
