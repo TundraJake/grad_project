@@ -22,7 +22,8 @@ import datetime
 DOTCSV = '.csv'
 DOTTXT = '.txt'
 
-DATA_DIR = 'data/stocknet-dataset/'
+DATA_DIR = './data/stocknet-dataset/'
+SAVE_DIR = './data/post_processing/'
 PRICE_PREPROCESSED_DIR = DATA_DIR + 'price/preprocessed/'
 PRICE_RAW_DIR = DATA_DIR + 'price/raw/'
 TWEET_PREPROCESSED_DIR = DATA_DIR + 'tweet/preprocessed/'
@@ -35,6 +36,7 @@ class TweetFrame(object):
         csv_file = PRICE_RAW_DIR + symbol + DOTCSV
         tweets_folder = TWEET_PREPROCESSED_DIR + symbol+ '/' 
 
+        self.symbol_ = symbol
         self.times_series_ = self.__set_price_data(symbol, csv_file)
         self.user_tweets_ = self.__set_tweet_data(symbol, tweets_folder)
 
@@ -49,28 +51,35 @@ class TweetFrame(object):
         self.processed_so_far_['neg_val'] = neg_vals
         self.processed_so_far_['date'] = self.user_tweets_['created_at'].dt.date
 
-        self.processed_so_far_ = self.__convert_to_daily_segments()
+        self.__convert_to_daily_segments()
         self.__merge_time_series()
+
+        self.final_df_ = None
+        self.__normalize_dataframe()
+        self.__create_pickle_file()
+
+    def __create_pickle_file(self):
+        outfile = SAVE_DIR + self.symbol_ + '.pkl'
+        self.final_df_.to_csv(outfile)
+
+    def __normalize_dataframe(self):
+        vals = self.processed_so_far_.values
+        min_max_scalar = MinMaxScaler()
+        scaled_vals = min_max_scalar.fit_transform(vals)
+        self.final_df_ = pd.DataFrame(scaled_vals)
 
     def __merge_time_series(self):
         self.times_series_.rename(columns={'Date': 'date'}, inplace=True)
-
-        # self.times_series_ = self.times_series_.set_index('date')
-        # self.processed_so_far_ = self.processed_so_far_.set_index('date')
 
         ### Ensure the types are consistent. If this is not called, merge will not work.
         self.processed_so_far_.date = self.processed_so_far_.date.astype(str)
         self.times_series_.date = self.times_series_.date.astype(str)
 
-        # print(self.times_series_)
-        # df = self.processed_so_far_.merge(self.times_series_, left_on='date', right_on='date', how='left')
-        # df = pd.concat([self.processed_so_far_, self.times_series_], axis=1, join='inner')
         df = pd.merge(self.processed_so_far_, self.times_series_, how='inner')
         df = df.dropna()
         df = df.reset_index(drop=True)
         df = df.drop(columns=['date'])
-        print(df)
-        # print(self.processed_so_far_.columns, self.times_series_.columns)
+
         self.processed_so_far_ = df
                 
     def __convert_to_daily_segments(self):
@@ -88,11 +97,8 @@ class TweetFrame(object):
             tmp_df = tmp_df.append({'daily_pos_avg': pos_avg, 
                             'daily_neg_avg': neg_avg, 
                             'date': date}, ignore_index=True)
-        print(tmp_df)
-        return tmp_df
 
-    def __format_date(self):
-        return self.user_tweets_['created_at'].date()
+        self.processed_so_far_ = tmp_df
             
     def __set_tweet_data(self, symbol, folder):
         try:

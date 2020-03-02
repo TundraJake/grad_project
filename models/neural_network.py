@@ -33,7 +33,6 @@ class Neural_Network(object):
         print("X test shape: ", self.x_test_.shape)
         print("Y test shape: ", self.y_test_.shape)
 
-
         self.history_ = None
 
     def get_x_training_set(self):
@@ -44,9 +43,6 @@ class Neural_Network(object):
 
     def get_history(self):
         return self.history_.history
-
-    def convert_date_to_string(self):
-        print()
 
     def predict(self):
         predictions = self.model.predict(self.x_test_)
@@ -65,7 +61,6 @@ class Neural_Network(object):
         plt.legend()
         plt.show()
 
-	
     def summary(self):
         self.model.summary()
 
@@ -85,10 +80,6 @@ class Neural_Network(object):
         self.model.load_weights(self.name_ + '_model.h5')
 
     def _checkpoint(self):
-        """
-        Saves data between epochs.
-        """
-        ### TODO: Add proper name for checkpoint.
         checkpoint = ModelCheckpoint("", monitor='val_acc', verbose=1, save_best_only=True, mode='max')
         self.callbacks_list = [checkpoint]
 
