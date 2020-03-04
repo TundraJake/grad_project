@@ -56,11 +56,12 @@ class TweetFrame(object):
 
         self.final_df_ = None
         self.__normalize_dataframe()
-        self.__create_pickle_file()
+        self.__write_processed_symbol_pickle_file()
 
-    def __create_pickle_file(self):
-        outfile = SAVE_DIR + self.symbol_ + '.pkl'
-        self.final_df_.to_csv(outfile)
+    def __write_processed_symbol_pickle_file(self):
+        outfile = SAVE_DIR + self.symbol_
+        vals = np.array(self.final_df_.values)
+        np.save(outfile, vals)
 
     def __normalize_dataframe(self):
         vals = self.processed_so_far_.values
@@ -162,6 +163,4 @@ class TweetFrame(object):
 
         return pos_values, neg_values
 
-
 data = TweetFrame('AAPL')
-# data.print_tweets_statistics()
