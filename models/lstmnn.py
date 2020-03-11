@@ -1,15 +1,14 @@
-from models.neural_network import Neural_Network
+from models.neural_network import Neural_Network_Base
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, LSTM, Flatten
 import keras
 from keras.callbacks import ModelCheckpoint
 
 import numpy as np
-np.random.seed(1) 
 
 EPOCHS = 200
 
-class LSTMNN(Neural_Network):
+class LSTMNN(Neural_Network_Base):
 
     def __init__(self, X, Y, X_test, Y_test, name):
         super().__init__(X, Y, X_test, Y_test, name)
