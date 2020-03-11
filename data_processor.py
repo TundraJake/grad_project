@@ -29,6 +29,8 @@ PRICE_RAW_DIR = DATA_DIR + 'price/raw/'
 TWEET_PREPROCESSED_DIR = DATA_DIR + 'tweet/preprocessed/'
 TWEET_RAW_DIR = DATA_DIR + 'tweet/raw/'
 
+POSITIVE_THRESHOLD = .5
+
 class TweetFrame(object):
 
     def __init__(self, symbol):
@@ -36,57 +38,77 @@ class TweetFrame(object):
         csv_file = PRICE_RAW_DIR + symbol + DOTCSV
         tweets_folder = TWEET_PREPROCESSED_DIR + symbol+ '/' 
 
-        self.symbol_ = symbol
-        self.times_series_ = self.__set_price_data(symbol, csv_file)
-        self.user_tweets_ = self.__set_tweet_data(symbol, tweets_folder)
+        self.__symbol_ = symbol
+        self.__time_series_ = self.__set_price_data(symbol, csv_file)
+        self.__user_tweets_ = self.__set_tweet_data(symbol, tweets_folder)
 
         # Finalize a prepared dataset
-        self.processed_so_far_ = pd.DataFrame()
+        self.__processed_so_far_ = pd.DataFrame()
 
         pos_vals, neg_vals = self.__determine_tweet_sentiment()
-        self.user_tweets_['pos_val'] = pos_vals
-        self.user_tweets_['neg_val'] = neg_vals
+        self.__user_tweets_['pos_val'] = pos_vals
+        self.__user_tweets_['neg_val'] = neg_vals
 
-        self.processed_so_far_['pos_val'] = pos_vals
-        self.processed_so_far_['neg_val'] = neg_vals
-        self.processed_so_far_['date'] = self.user_tweets_['created_at'].dt.date
+        self.__processed_so_far_['pos_val'] = pos_vals
+        self.__processed_so_far_['neg_val'] = neg_vals
+        self.__processed_so_far_['date'] = self.__user_tweets_['created_at'].dt.date
 
         self.__convert_to_daily_segments()
         self.__merge_time_series()
 
-        self.final_df_ = None
+        self.__final_df_ = None
+        self.__add_next_day_close_column()
+        self.__delete_columns()
+        self.__change_column_places()
         self.__normalize_dataframe()
         self.__write_processed_symbol_pickle_file()
 
+    def __delete_columns(self):
+        self.__processed_so_far_ = self.__processed_so_far_.drop(columns=['date'])
+
+    def __add_next_day_close_column(self):
+        list_day_closes = self.__processed_so_far_['Close'].values.tolist()
+        list_next_day_closes = list_day_closes[1:]
+        # Average the last two 
+        list_next_day_closes.append((list_day_closes[-1] + list_day_closes[-2])/2)
+        self.__processed_so_far_['next_day_close'] = list_next_day_closes
+
+    def __change_column_places(self):
+        LAST_COLUMN_POSITION = -1
+        cols = self.__processed_so_far_.columns.tolist()
+        while cols[LAST_COLUMN_POSITION] != 'next_day_close':
+            cols = cols[LAST_COLUMN_POSITION:] + cols[:LAST_COLUMN_POSITION]
+        self.__processed_so_far_ = self.__processed_so_far_[cols]
+
     def __write_processed_symbol_pickle_file(self):
-        outfile = SAVE_DIR + self.symbol_
-        vals = np.array(self.final_df_.values)
+        outfile = SAVE_DIR + self.__symbol_
+        vals = np.array(self.__final_df_.values)
         np.save(outfile, vals)
+        np.savetxt(outfile + '.txt', vals, delimiter=',')
 
     def __normalize_dataframe(self):
-        vals = self.processed_so_far_.values
+        vals = self.__processed_so_far_.values
         min_max_scalar = MinMaxScaler()
         scaled_vals = min_max_scalar.fit_transform(vals)
-        self.final_df_ = pd.DataFrame(scaled_vals)
+        self.__final_df_ = pd.DataFrame(scaled_vals)
 
     def __merge_time_series(self):
-        self.times_series_.rename(columns={'Date': 'date'}, inplace=True)
+        self.__time_series_.rename(columns={'Date': 'date'}, inplace=True)
 
         ### Ensure the types are consistent. If this is not called, merge will not work.
-        self.processed_so_far_.date = self.processed_so_far_.date.astype(str)
-        self.times_series_.date = self.times_series_.date.astype(str)
+        self.__processed_so_far_.date = self.__processed_so_far_.date.astype(str)
+        self.__time_series_.date = self.__time_series_.date.astype(str)
 
-        df = pd.merge(self.processed_so_far_, self.times_series_, how='inner')
+        df = pd.merge(self.__processed_so_far_, self.__time_series_, how='inner')
         df = df.dropna()
         df = df.reset_index(drop=True)
-        df = df.drop(columns=['date'])
 
-        self.processed_so_far_ = df
+        self.__processed_so_far_ = df
                 
     def __convert_to_daily_segments(self):
-        df = self.processed_so_far_
+        df = self.__processed_so_far_
         dates = sorted(df.date.unique())
-        tmp_df = pd.DataFrame(columns=['daily_pos_avg', 'daily_neg_avg', 'date'])
+        tmp_df = pd.DataFrame(columns=['daily_pos_sent_avg', 'daily_neg_sent_avg', 'date'])
         for index, date in enumerate(dates): 
             rows = df.loc[df['date'] == date]
             pos_total = rows['pos_val'].sum()
@@ -95,11 +117,11 @@ class TweetFrame(object):
             pos_avg = pos_total/num_rows
             neg_avg = neg_total/num_rows
             # TODO: time this
-            tmp_df = tmp_df.append({'daily_pos_avg': pos_avg, 
-                            'daily_neg_avg': neg_avg, 
+            tmp_df = tmp_df.append({'daily_pos_sent_avg': pos_avg, 
+                            'daily_neg_sent_avg': neg_avg, 
                             'date': date}, ignore_index=True)
 
-        self.processed_so_far_ = tmp_df
+        self.__processed_so_far_ = tmp_df
             
     def __set_tweet_data(self, symbol, folder):
         try:
@@ -131,20 +153,22 @@ class TweetFrame(object):
     
     def __calculate_pos_neg_ratio(self):
         P100 = 1.0
-        df = self.user_tweets_
+        df = self.__user_tweets_
         num_of_rows = df.shape[0]
-        num_of_pos_tweets = len(df[df['pos_val'] > .5 ].values.tolist())
+        num_of_pos_tweets = len(df[df['pos_val'] > POSITIVE_THRESHOLD ].values.tolist())
         pos_ratio = num_of_pos_tweets / num_of_rows
         neg_ratio = P100 - pos_ratio 
         return pos_ratio, neg_ratio
 
     def print_tweets_statistics(self):
         pos_ratio, neg_ratio = self.__calculate_pos_neg_ratio()
-        print('Number of tweets: ', len(self.user_tweets_))
-        print('Dataframe stats before final dataset: ', self.processed_so_far_.describe())
-        print('Percent Tweets that are positive: ', pos_ratio)
-        print('Percent Tweets that are negative: ', neg_ratio)
-        print('Set so far: \n', self.processed_so_far_)
+        print('Number of tweets: ', len(self.__user_tweets_))
+        print('Dataframe stats before final dataset: ', self.__processed_so_far_.describe())
+        print(f'Percent Tweets that are positive given > {POSITIVE_THRESHOLD}: ', pos_ratio)
+        print(f'Percent Tweets that are negative given < {POSITIVE_THRESHOLD}: ', neg_ratio)
+        columns = self.__processed_so_far_.columns
+        print("Columns in dataset: ", columns)
+        print("Final output shape: ", self.__final_df_.shape)
     
     def __determine_tweet_sentiment(self):
         POS_SENTIMENT = 1
@@ -154,7 +178,7 @@ class TweetFrame(object):
         pos_values = []
         neg_values = []
  
-        for tweet in self.user_tweets_['text'].tolist():
+        for tweet in self.__user_tweets_['text'].tolist():
             tweet = ' '.join(tweet)
             #Sentiment object.
             sentiment = tb(tweet).sentiment
@@ -164,3 +188,4 @@ class TweetFrame(object):
         return pos_values, neg_values
 
 data = TweetFrame('AAPL')
+data.print_tweets_statistics()
