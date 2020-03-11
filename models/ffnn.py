@@ -1,4 +1,4 @@
-from models.neural_network import Neural_Network
+from models.neural_network import Neural_Network_Base
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, LSTM, Flatten
 import keras
@@ -6,17 +6,17 @@ from keras.callbacks import ModelCheckpoint
 from keras.utils import plot_model
 
 import numpy as np
-np.random.seed(1) 
 
-class FFNN(Neural_Network):
+class FFNN(Neural_Network_Base):
 
-    def __init__(self, X, Y, X_test, Y_test, name):
-        super().__init__(X, Y, X_test, Y_test, name)
+    def __init__(self, X, Y, X_test, Y_test, name, epochs, batch_size):
+        super().__init__(X, Y, X_test, Y_test, name, epochs, batch_size)
         self.model = self.__build_model()
 
     def __build_model(self):
         model = Sequential()
         model.add(Dense(2048, input_dim = self.x_train_.shape[1]))
+        print('input dimensions:', self.x_train_.shape[1])
         model.add(Dense(2048, activation='relu'))
         model.add(Dense(1024, activation='relu'))
         model.add(Dense(256, activation='relu'))
@@ -24,12 +24,12 @@ class FFNN(Neural_Network):
         model.add(Dense(1))
         return model
 
-    def train(self):
+    def train(self):    
+        DISPLAY_TRAINING_PROGRESS = 2
         self.model.compile(loss='mean_squared_error', optimizer='adam')
         self.summary()
-        self._checkpoint()
         self.history_ = self.model.fit(self.get_x_training_set(), self.get_y_training_set(), 
-                        epochs=750, batch_size=5, verbose=1)
+                        epochs=self.get_epochs(), batch_size=self.get_batch_size(), verbose=DISPLAY_TRAINING_PROGRESS)
 
     def plot_loss_graph(self):
         plt.plot(self.history_.history['loss'])
