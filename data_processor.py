@@ -18,18 +18,9 @@ import numpy as np
 
 import sys
 import datetime
+import matplotlib.pyplot  as plt
 
-DOTCSV = '.csv'
-DOTTXT = '.txt'
-
-DATA_DIR = './data/stocknet-dataset/'
-SAVE_DIR = './data/post_processing/'
-PRICE_PREPROCESSED_DIR = DATA_DIR + 'price/preprocessed/'
-PRICE_RAW_DIR = DATA_DIR + 'price/raw/'
-TWEET_PREPROCESSED_DIR = DATA_DIR + 'tweet/preprocessed/'
-TWEET_RAW_DIR = DATA_DIR + 'tweet/raw/'
-
-POSITIVE_THRESHOLD = .5
+from settings import *
 
 class TweetFrame(object):
 
@@ -57,11 +48,69 @@ class TweetFrame(object):
         self.__merge_time_series()
 
         self.__final_df_ = None
+        self.__create_directories()
         self.__add_next_day_close_column()
         self.__delete_columns()
         self.__change_column_places()
         self.__normalize_dataframe()
-        self.__write_processed_symbol_pickle_file()
+        self.__save_dataframe_to_file()
+        self.__plot_daily_tweet_sentiment_graphs()
+
+    def get_symbol(self):
+        return self.__symbol_
+
+    def get_post_processing_directory(self):
+        return POST_PROCESSING_DIR + self.get_symbol() + '/' + self.get_symbol()
+
+    def get_results_directory(self):
+        return RESULTS_DIR + self.get_symbol()
+
+    def get_post_processing_directory(self):
+        return POST_PROCESSING_DIR + self.get_symbol()
+
+    def __create_results_directory_for_symbol(self):
+        path = self.get_results_directory()
+        if not os.path.exists(path):
+            try:
+                os.mkdir(path)
+            except:
+                print(f'Cannot create directory at path: {path} ')
+                print(f'Exiting Program...')
+                sys.exit()
+
+    def __create_post_processing_directory_for_symbol(self):
+        path = self.get_post_processing_directory()
+        if not os.path.exists(path):
+            try:
+                os.mkdir(path)
+            except:
+                print(f'Cannot create directory at path: {path} ')
+                print(f'Exiting Program...')
+                sys.exit()
+
+    def __create_directories(self):
+        self.__create_results_directory_for_symbol()
+        self.__create_post_processing_directory_for_symbol()
+    
+    def __plot_positive_sentiment_averages(self):
+        pos_sentiments = self.__processed_so_far_['daily_pos_sent_avg']
+        plt.plot(pos_sentiments)
+        plt.title('Daily Averages of Positive Tweet Sentiment for ' + self.get_symbol())
+        plt.xlabel('Average Sentiment (%)')
+        plt.ylabel('Sentiment')
+        plt.show()
+
+    def __plot_negative_sentiment_averages(self):
+        pos_sentiments = self.__processed_so_far_['daily_neg_sent_avg']
+        plt.plot(pos_sentiments)
+        plt.title('Daily Averages of Negative Tweet Sentiment for ' + self.get_symbol())
+        plt.xlabel('Average Sentiment (%)')
+        plt.ylabel('Sentiment')
+        plt.show()
+
+    def __plot_daily_tweet_sentiment_graphs(self):
+        self.__plot_positive_sentiment_averages()
+        self.__plot_negative_sentiment_averages()
 
     def __delete_columns(self):
         self.__processed_so_far_ = self.__processed_so_far_.drop(columns=['date'])
@@ -80,8 +129,8 @@ class TweetFrame(object):
             cols = cols[LAST_COLUMN_POSITION:] + cols[:LAST_COLUMN_POSITION]
         self.__processed_so_far_ = self.__processed_so_far_[cols]
 
-    def __write_processed_symbol_pickle_file(self):
-        outfile = SAVE_DIR + self.__symbol_
+    def __save_dataframe_to_file(self):
+        outfile = self.get_post_processing_directory()
         vals = np.array(self.__final_df_.values)
         np.save(outfile, vals)
         np.savetxt(outfile + '.txt', vals, delimiter=',')
