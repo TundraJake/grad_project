@@ -42,6 +42,7 @@ def build_FFNN(training_set, test_set, name, epochs, batch_size):
     print("The shape is now: ", X_train.shape)
     Y_train = training_set[:, -1]
     print(Y_train)
+    print('Y_train', Y_train)
 
     X_test = test_set[:, 0:-1]
     Y_test = test_set[:, -1]
@@ -68,9 +69,10 @@ def build_and_train_nns():
     # TODO: Get FFNN finished by adjusting the input size and determining what is wrong with FFNN not making any good result
     # despite the fact it's given the answer.
     networks = []
-    networks.append(build_FFNN(training_set, test_set, 'ffnn0', 50, 5))
-    networks.append(build_FFNN(training_set, test_set, 'ffnn1', 250, 5))
-    networks.append(build_FFNN(training_set, test_set, 'ffnn2', 2500, 5))
+    networks.append(build_FFNN(training_set, test_set, 'ffnn0', 5, 5))
+    networks.append(build_FFNN(training_set, test_set, 'ffnn1', 50, 5))
+    networks.append(build_FFNN(training_set, test_set, 'ffnn2', 250, 5))
+    networks.append(build_FFNN(training_set, test_set, 'ffnn3', 400, 5))
 
     train_networks(networks)
 

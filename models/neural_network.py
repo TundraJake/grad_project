@@ -49,32 +49,22 @@ class Neural_Network_Base(object):
         return self.history_.history
 
     def predict(self):
-        scalar = MinMaxScaler()
-
         predictions = self.model.predict(self.x_test_)
         real_stock_price = self.y_test_
-        # real_stock_price = scarar.inverse_transform(self.x_test_[:, 0])
-        # predictions = scarar.inverse_transform(predictions)
-        scalar.fit(predictions)
-        predictions = scalar.inverse_transform(predictions)
-        plt.plot(real_stock_price, color = 'black', label = 'Actual Price')
-        plt.plot(predictions, color = 'green', label = 'Predicted Price')
 
+        all_days = np.concatenate([self.y_train_,self.y_test_])
+
+        plt.plot(all_days, color='blue', label='Actual Price')
+        plt.plot(range(len(all_days) - len(predictions), len(all_days)), predictions, color = 'red', label = 'Predicted Price')
 
         plt.title(self.name_ + ' Performance w/' + str(self.__epochs_) + ' epochs')
         plt.xlabel('Trading Day')
         plt.ylabel('Price ($)')
         plt.legend()
-        plt.savefig('data/results/' + self.name_)
+        plt.savefig('data/results/nn/' + self.name_)
 
     def summary(self):
         self.model.summary()
-
-    def write_to_json(self):
-        # serialize model to JSON
-        model_json = self.model.to_json()
-        with open("model.json", "w") as json_file:
-            json_file.write('results/' + model_json)
 
     def write_weights_to_h5(self):
         # serialize weights to HDF5
@@ -85,6 +75,9 @@ class Neural_Network_Base(object):
         # Model needs to be built first
         self.model.load_weights(self.name_ + '_model.h5')
 
+    def load_model(self, filename):
+        self.model.load_weights(filename)
+
     def plot_accuracy(self):
         plt.plot(self.history_.history['acc'])
         plt.plot(self.history_.history['val_acc'])
@@ -94,9 +87,6 @@ class Neural_Network_Base(object):
         plt.legend(['train', 'test'], loc='upper left')
         plt.show()
 
-    def load_model(self, filename):
-        self.model.load_weights(filename)
-
     def write_loss_history_graph(self):
         hist = self.get_history()
         plt.plot(hist['loss'])
@@ -104,7 +94,7 @@ class Neural_Network_Base(object):
         plt.ylabel('loss')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.savefig('data/results/' + self.name_ + '_loss.png')
+        plt.savefig('data/results/nn/' + self.name_ + '_loss.png')
         plt.clf()
 
     def evaluate(self):
