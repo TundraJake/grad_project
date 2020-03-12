@@ -63,10 +63,10 @@ class TweetFrame(object):
         return POST_PROCESSING_DIR + self.get_symbol() + '/' + self.get_symbol()
 
     def get_results_directory(self):
-        return RESULTS_DIR + self.get_symbol()
+        return RESULTS_DIR + self.get_symbol() + '/'
 
     def get_post_processing_directory(self):
-        return POST_PROCESSING_DIR + self.get_symbol()
+        return POST_PROCESSING_DIR + self.get_symbol() + '/'
 
     def __create_results_directory_for_symbol(self):
         path = self.get_results_directory()
@@ -94,23 +94,40 @@ class TweetFrame(object):
     
     def __plot_positive_sentiment_averages(self):
         pos_sentiments = self.__processed_so_far_['daily_pos_sent_avg']
-        plt.plot(pos_sentiments)
+        plt.plot(pos_sentiments, color='blue')
         plt.title('Daily Averages of Positive Tweet Sentiment for ' + self.get_symbol())
-        plt.xlabel('Average Sentiment (%)')
-        plt.ylabel('Sentiment')
-        plt.show()
+        plt.xlabel('Trading Day')
+        plt.ylabel('Sentiment (%)')
+        plt.axis([0, len(pos_sentiments), 0, 1])
+        plt.savefig(self.get_results_directory() + 'pos_sent_graph')
+        plt.clf()
 
     def __plot_negative_sentiment_averages(self):
-        pos_sentiments = self.__processed_so_far_['daily_neg_sent_avg']
-        plt.plot(pos_sentiments)
+        neg_sentiments = self.__processed_so_far_['daily_neg_sent_avg']
+        plt.plot(neg_sentiments, color='orange')
         plt.title('Daily Averages of Negative Tweet Sentiment for ' + self.get_symbol())
-        plt.xlabel('Average Sentiment (%)')
-        plt.ylabel('Sentiment')
-        plt.show()
+        plt.xlabel('Trading Day')
+        plt.ylabel('Sentiment (%)')
+        plt.axis([0, len(neg_sentiments), 0, 1])
+        plt.savefig(self.get_results_directory() + 'neg_sent_graph')
+        plt.clf()
+
+    def __plot_both_sentiment_graphs(self):
+        neg_sentiments = self.__processed_so_far_['daily_neg_sent_avg']
+        pos_sentiments = self.__processed_so_far_['daily_pos_sent_avg']
+        plt.plot(neg_sentiments, color='orange')
+        plt.plot(pos_sentiments, color='blue')
+        plt.title('Daily Averages of Tweet Sentiments for ' + self.get_symbol())
+        plt.xlabel('Trading Day')
+        plt.ylabel('Sentiment (%)')
+        plt.axis([0, len(neg_sentiments), 0, 1])
+        plt.savefig(self.get_results_directory() + 'both_sent_graph')
+        plt.clf()
 
     def __plot_daily_tweet_sentiment_graphs(self):
         self.__plot_positive_sentiment_averages()
         self.__plot_negative_sentiment_averages()
+        self.__plot_both_sentiment_graphs()
 
     def __delete_columns(self):
         self.__processed_so_far_ = self.__processed_so_far_.drop(columns=['date'])
