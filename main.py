@@ -10,6 +10,8 @@ import sys
 
 import numpy as np
 
+from settings import * 
+
 # Reproducible
 np.random.seed(1) 
 
@@ -62,8 +64,8 @@ def build_LSTM(training_set, test_set, symbol, epochs, batch_size):
     return LSTM(X_train, Y_train, X_test, Y_test, symbol, epochs, batch_size)
 
 def build_and_train_nns():
-    filename = 'AAPL.npy'
-    data = np.load('data/post_processing/' + filename)
+    symbol = 'AAPL'
+    data = np.load(POST_PROCESSING_DIR + symbol + '/' + 'data.npy')
     training_set, test_set = build_training_test_sets(data)
 
     # TODO: Get FFNN finished by adjusting the input size and determining what is wrong with FFNN not making any good result

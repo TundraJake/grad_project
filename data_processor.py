@@ -115,11 +115,12 @@ class TweetFrame(object):
     def __plot_both_sentiment_graphs(self):
         neg_sentiments = self.__processed_so_far_['daily_neg_sent_avg']
         pos_sentiments = self.__processed_so_far_['daily_pos_sent_avg']
-        plt.plot(neg_sentiments, color='orange')
-        plt.plot(pos_sentiments, color='blue')
+        plt.plot(neg_sentiments, color='orange', label='Negative')
+        plt.plot(pos_sentiments, color='blue', label='Positive')
         plt.title('Daily Averages of Tweet Sentiments for ' + self.get_symbol())
         plt.xlabel('Trading Day')
         plt.ylabel('Sentiment (%)')
+        plt.legend(loc='upper left')
         plt.axis([0, len(neg_sentiments), 0, 1])
         plt.savefig(self.get_results_directory() + 'both_sent_graph')
         plt.clf()
@@ -149,8 +150,8 @@ class TweetFrame(object):
     def __save_dataframe_to_file(self):
         outfile = self.get_post_processing_directory()
         vals = np.array(self.__final_df_.values)
-        np.save(outfile, vals)
-        np.savetxt(outfile + '.txt', vals, delimiter=',')
+        np.save(outfile + 'data', vals)
+        np.savetxt(outfile +  'data.txt', vals, delimiter=',')
 
     def __normalize_dataframe(self):
         vals = self.__processed_so_far_.values

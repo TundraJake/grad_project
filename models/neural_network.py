@@ -10,14 +10,14 @@ import numpy.random as npr
 import numpy as np
 import nltk
 
-DIR = 'results/'
-FFN_DIR = DIR + 'ffn/'
+from settings import *
 
 class Neural_Network_Base(object):
 
-    def __init__(self, X, Y, X_test, Y_test, name, epochs, batch_size):
+    def __init__(self, X, Y, X_test, Y_test, name, tr, epochs, batch_size):
 
-        self.name_ = name
+        self.__name_ = name
+        self.__training_rate_ = tr
         self.x_train_ = X
         print("X training shape: ", self.x_train_.shape)
         self.y_train_ = Y
@@ -32,6 +32,12 @@ class Neural_Network_Base(object):
         self.__batch_size_ = batch_size
 
         self.history_ = None
+
+    def get_training_rate(self):
+        return self.__training_rate_
+
+    def get_name(self):
+        return self.__name_
 
     def get_epochs(self):
         return self.__epochs_
@@ -53,27 +59,33 @@ class Neural_Network_Base(object):
         real_stock_price = self.y_test_
 
         all_days = np.concatenate([self.y_train_,self.y_test_])
+        all_days = self.y_test_
 
         plt.plot(all_days, color='blue', label='Actual Price')
         plt.plot(range(len(all_days) - len(predictions), len(all_days)), predictions, color = 'red', label = 'Predicted Price')
 
-        plt.title(self.name_ + ' Performance w/' + str(self.__epochs_) + ' epochs')
+        plt.title(self.get_name() + ' Performance w/' + str(self.__epochs_) + ' epochs')
         plt.xlabel('Trading Day')
         plt.ylabel('Price ($)')
         plt.legend()
-        plt.savefig('data/results/nn/' + self.name_)
+        plt.savefig(NN_RESULT_DIR + self.get_name())
+        plt.clf()
 
     def summary(self):
         self.model.summary()
 
     def write_weights_to_h5(self):
         # serialize weights to HDF5
-        self.model.save_weights(self.name_ + "_model.h5")
+        self.model.save_weights(self.get_name() + "/_model.h5")
         print("Saved model to disk")
 
     def load_weights_from_h5(self):
         # Model needs to be built first
-        self.model.load_weights(self.name_ + '_model.h5')
+        try:
+            self.model.load_weights(self.get_name() + '/_model.h5')
+        except:
+            print("Could not find or load " + self.get_name())
+            sys.exit()
 
     def load_model(self, filename):
         self.model.load_weights(filename)
@@ -85,20 +97,22 @@ class Neural_Network_Base(object):
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
+        plt.savefig(NN_RESULT_DIR + self.get_name() + '/_loss.png')
         plt.show()
+        plt.clf()
 
-    def write_loss_history_graph(self):
+    def plot_loss_history_graph(self):
         hist = self.get_history()
         plt.plot(hist['loss'])
         plt.title('model loss')
         plt.ylabel('loss')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.savefig('data/results/nn/' + self.name_ + '_loss.png')
+        plt.savefig(NN_RESULT_DIR + self.get_name() + '_loss.png')
         plt.clf()
 
     def evaluate(self):
         scores = self.model.evaluate(self.x_test_, self.y_test_)
         print("Model Metrics: ", self.model.metrics_names)
         print("Scores: ", scores)
-        self.write_loss_history_graph()    
+        self.plot_loss_history_graph()    
