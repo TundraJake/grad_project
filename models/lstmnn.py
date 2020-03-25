@@ -6,31 +6,31 @@ from keras.callbacks import ModelCheckpoint
 
 import numpy as np
 
-EPOCHS = 200
-
 class LSTMNN(Neural_Network_Base):
 
-    def __init__(self, X, Y, X_test, Y_test, name):
-        super().__init__(X, Y, X_test, Y_test, name)
+    def __init__(self, X, Y, X_test, Y_test, name, epochs, batch_size):
+        super().__init__(X, Y, X_test, Y_test, name, epochs, batch_size)
 
         self.model = self.__build_model()
 
     # input_dim = self.x_train_.shape[1]
     def __build_model(self):
         model = Sequential()
-        print(self.x_train_.shape)
-        model.add(LSTM(units=2048, return_sequences = True,  input_shape=(self.x_train_.shape[1], 1) ))
-        model.add(LSTM(1024, return_sequences = True))
-        model.add(LSTM(512, return_sequences = True))
-        model.add(Flatten())
-        model.add(Dense(256, activation = 'relu'))
-        model.add(Dense(1, activation = 'relu'))
+        print('shape before start: ', self.x_train_.shape)
+        shape = (self.x_train_.shape[1], self.x_train_.shape[2])
+        print('input shape: ', shape )
+        model.add(LSTM(units=1024, return_sequences=True, input_shape=shape ))
+        model.add(LSTM(512))
+        model.add(Dense(1))
+        # model.add(Flatten())
+        # model.add(LSTM(512, return_sequences=True))
+        # model.add(Dense(256, activation = 'relu'))
+        # model.add(Dense(1, activation = 'relu'))
         return model
 
     def train(self):
         self.model.compile(loss='mean_squared_error', optimizer='adam')
-        self._checkpoint()
-        self.history_ = self.model.fit(self.get_x_training_set(), self.get_y_training_set(), epochs=EPOCHS, batch_size=5, verbose=1)
+        self.history_ = self.model.fit(self.get_x_training_set(), self.get_y_training_set(), epochs=self.get_epochs(), batch_size=self.get_batch_size(), verbose=1)
         # print(self.history_.history.keys())
 		
     def write_history_to_file(self):
@@ -45,4 +45,5 @@ class LSTMNN(Neural_Network_Base):
         plt.xlabel('epoch')
         plt.legend(['train'], loc='upper left')
         plt.show()
+        plt.clf()
     

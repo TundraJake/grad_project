@@ -14,28 +14,27 @@ from settings import *
 
 class Neural_Network_Base(object):
 
-    def __init__(self, X, Y, X_test, Y_test, name, tr, epochs, batch_size):
+    def __init__(self, X, Y, X_test, Y_test, name, epochs, batch_size):
 
         self.__name_ = name
-        self.__training_rate_ = tr
         self.x_train_ = X
-        print("X training shape: ", self.x_train_.shape)
+        # print("X training shape: ", self.x_train_.shape)
         self.y_train_ = Y
-        print("Y training shape: ", self.y_train_.shape)
+        # print("Y training shape: ", self.y_train_.shape)
 
         self.x_test_ = X_test
         self.y_test_ = Y_test
-        print("X test shape: ", self.x_test_.shape)
-        print("Y test shape: ", self.y_test_.shape)
+        # print("X test shape: ", self.x_test_.shape)
+        # print("Y test shape: ", self.y_test_.shape)
 
         self.__epochs_ = epochs
         self.__batch_size_ = batch_size
 
         self.history_ = None
 
-    def get_training_rate(self):
-        return self.__training_rate_
-
+    def get_batch_size(self):
+        return self.__batch_size_
+        
     def get_name(self):
         return self.__name_
 
