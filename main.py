@@ -52,7 +52,7 @@ def build_FFNN(training_set, test_set, name, epochs, batch_size):
 
     return FFNN(X_train, Y_train, X_test, Y_test, name, epochs, batch_size)
 
-def build_LSTM(training_set, test_set, symbol, epochs, batch_size):
+def build_LSTM(training_set, test_set, name, epochs, batch_size):
     X_train = training_set[:, 0:-1]
     # reshape input to be 3D [samples, timesteps, features]
     X_train = np.reshape(X_train, (X_train.shape[0], 1, X_train.shape[1]) )
@@ -64,22 +64,24 @@ def build_LSTM(training_set, test_set, symbol, epochs, batch_size):
     X_test = np.reshape(X_test, (X_test.shape[0], 1, X_test.shape[1]) )
     Y_test = test_set[:, -1]
 
-    return LSTMNN(X_train, Y_train, X_test, Y_test, symbol, epochs, batch_size)
+    return LSTMNN(X_train, Y_train, X_test, Y_test, name, epochs, batch_size)
 
 def build_and_train_nns():
     symbol = 'AAPL'
     data = np.load(POST_PROCESSING_DIR + symbol + '/' + 'data.npy')
     training_set, test_set = build_training_test_sets(data)
+    experiment_name = '_close_sentiments'
 
     networks = []
-#     networks.append(build_FFNN(training_set, test_set, 'ffnn0', 5, 5))
+    networks.append(build_FFNN(training_set, test_set, 'ffnn0' + experiment_name, 1000, 5))
 #     networks.append(build_FFNN(training_set, test_set, 'ffnn1', 50, 5))
 #     networks.append(build_FFNN(training_set, test_set, 'ffnn2', 250, 5))
 #     networks.append(build_FFNN(training_set, test_set, 'ffnn3', 400, 5))
-    networks.append(build_LSTM(training_set, test_set, 'lstm0', 10, 5))
-    networks.append(build_LSTM(training_set, test_set, 'lstm1', 50, 5))
-    networks.append(build_LSTM(training_set, test_set, 'lstm2', 100, 5))
-    print("wut")
+    networks.append(build_LSTM(training_set, test_set, 'lstm0' + experiment_name, 10, 5))
+    networks.append(build_LSTM(training_set, test_set, 'lstm1' + experiment_name, 50, 5))
+    networks.append(build_LSTM(training_set, test_set, 'lstm2' + experiment_name, 100, 5))
+    networks.append(build_LSTM(training_set, test_set, 'lstm3' + experiment_name, 500, 5))
+    
     train_networks(networks)
 
 def main():

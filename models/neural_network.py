@@ -57,7 +57,7 @@ class Neural_Network_Base(object):
         predictions = self.model.predict(self.x_test_)
         real_stock_price = self.y_test_
 
-        all_days = np.concatenate([self.y_train_,self.y_test_])
+        #all_days = np.concatenate([self.y_train_,self.y_test_])
         all_days = self.y_test_
 
         plt.plot(all_days, color='blue', label='Actual Price')

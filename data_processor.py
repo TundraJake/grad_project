@@ -154,7 +154,11 @@ class TweetFrame(object):
         np.savetxt(outfile +  'data.txt', vals, delimiter=',')
 
     def __normalize_dataframe(self):
-        vals = self.__processed_so_far_.values
+        columns_to_pull = ['daily_pos_sent_avg', 
+                        'daily_neg_sent_avg',
+                        'Close',
+                        'next_day_close']
+        vals = self.__processed_so_far_[columns_to_pull].values
         min_max_scalar = MinMaxScaler()
         scaled_vals = min_max_scalar.fit_transform(vals)
         self.__final_df_ = pd.DataFrame(scaled_vals)
