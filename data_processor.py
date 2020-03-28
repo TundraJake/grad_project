@@ -52,7 +52,7 @@ class TweetFrame(object):
         self.__add_next_day_close_column()
         self.__delete_columns()
         self.__change_column_places()
-        self.__normalize_dataframe()
+
         self.__save_dataframe_to_file()
         self.__plot_daily_tweet_sentiment_graphs()
 
@@ -149,15 +149,13 @@ class TweetFrame(object):
 
     def __save_dataframe_to_file(self):
         outfile = self.get_post_processing_directory()
-        vals = np.array(self.__final_df_.values)
-        np.save(outfile + 'data', vals)
-        np.savetxt(outfile +  'data.txt', vals, delimiter=',')
+        for exp in EXPERIMENTS:
+            self.__normalize_dataframe(EXPERIMENTS[exp])
+            vals = np.array(self.__final_df_.values)
+            np.save(outfile + exp + '_data', vals)
+            np.savetxt(outfile + exp + '_data', vals, delimiter=',')
 
-    def __normalize_dataframe(self):
-        columns_to_pull = ['daily_pos_sent_avg', 
-                        'daily_neg_sent_avg',
-                        'Close',
-                        'next_day_close']
+    def __normalize_dataframe(self, columns_to_pull):
         vals = self.__processed_so_far_[columns_to_pull].values
         min_max_scalar = MinMaxScaler()
         scaled_vals = min_max_scalar.fit_transform(vals)
