@@ -8,8 +8,7 @@ PRICE_PREPROCESSED_DIR = DATA_DIR + 'price/preprocessed/'
 PRICE_RAW_DIR = DATA_DIR + 'price/raw/'
 TWEET_PREPROCESSED_DIR = DATA_DIR + 'tweet/preprocessed/'
 TWEET_RAW_DIR = DATA_DIR + 'tweet/raw/'
-NN_RESULT_DIR = 'data/results/nn/'
-
+NN_RESULT_DIR = 'data/results/experiments/'
 
 POSITIVE_THRESHOLD = .5
 
@@ -26,3 +25,5 @@ EXPERIMENTS = {
                         'daily_neg_sent_avg',
                         'next_day_close'],
 }
+
+SYMBOLS = ['AAPL']

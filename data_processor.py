@@ -53,6 +53,7 @@ class TweetFrame(object):
         self.__delete_columns()
         self.__change_column_places()
 
+        self.__build_experiment_directory()
         self.__save_dataframe_to_file()
         self.__plot_daily_tweet_sentiment_graphs()
 
@@ -63,7 +64,7 @@ class TweetFrame(object):
         return POST_PROCESSING_DIR + self.get_symbol() + '/' + self.get_symbol()
 
     def get_results_directory(self):
-        return RESULTS_DIR + self.get_symbol() + '/'
+        return RESULTS_DIR + 'sentiments/' + self.get_symbol() + '/'
 
     def get_post_processing_directory(self):
         return POST_PROCESSING_DIR + self.get_symbol() + '/'
@@ -72,7 +73,7 @@ class TweetFrame(object):
         path = self.get_results_directory()
         if not os.path.exists(path):
             try:
-                os.mkdir(path)
+                os.makedirs(path)
             except:
                 print(f'Cannot create directory at path: {path} ')
                 print(f'Exiting Program...')
@@ -82,7 +83,7 @@ class TweetFrame(object):
         path = self.get_post_processing_directory()
         if not os.path.exists(path):
             try:
-                os.mkdir(path)
+                os.makedirs(path)
             except:
                 print(f'Cannot create directory at path: {path} ')
                 print(f'Exiting Program...')
@@ -97,7 +98,7 @@ class TweetFrame(object):
         plt.plot(pos_sentiments, color='blue')
         plt.title('Daily Averages of Positive Tweet Sentiment for ' + self.get_symbol())
         plt.xlabel('Trading Day')
-        plt.ylabel('Sentiment (%)')
+        plt.ylabel('Sentiment')
         plt.axis([0, len(pos_sentiments), 0, 1])
         plt.savefig(self.get_results_directory() + 'pos_sent_graph')
         plt.clf()
@@ -239,6 +240,18 @@ class TweetFrame(object):
         print("Columns in dataset: ", columns)
         print("Final output shape: ", self.__final_df_.shape)
     
+    def __build_experiment_directory(self):
+        # Prepare for NNs. 
+        for exp in EXPERIMENTS:
+            path = NN_RESULT_DIR + exp + '/'
+            if not os.path.exists(path):
+                try:
+                    os.makedirs(path)
+                except:
+                    print(f'Cannot create directory at path: {path} ')
+                    print(f'Exiting Program...')
+                    sys.exit()   
+
     def __determine_tweet_sentiment(self):
         POS_SENTIMENT = 1
         NEG_SENTIMENT = 2
