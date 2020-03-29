@@ -8,17 +8,16 @@ import numpy as np
 
 class LSTMNN(Neural_Network_Base):
 
-    def __init__(self, X, Y, X_test, Y_test, name, epochs, batch_size):
-        super().__init__(X, Y, X_test, Y_test, name, epochs, batch_size)
-
+    def __init__(self, X, Y, X_test, Y_test, sym, name, exp, epochs, batch_size):
+        super().__init__(X, Y, X_test, Y_test, sym, name, exp, epochs, batch_size)
         self.model = self.__build_model()
 
     # input_dim = self.x_train_.shape[1]
     def __build_model(self):
         model = Sequential()
-        print('shape before start: ', self.x_train_.shape)
+        # print('shape before start: ', self.x_train_.shape)
         shape = (self.x_train_.shape[1], self.x_train_.shape[2])
-        print('input shape: ', shape )
+        # print('input shape: ', shape )
         model.add(LSTM(units=1024, return_sequences=True, input_shape=shape ))
         model.add(LSTM(512))
         model.add(Dense(1))
@@ -35,7 +34,7 @@ class LSTMNN(Neural_Network_Base):
 		
     def write_history_to_file(self):
         numpy_loss_history = np.array(loss_history)
-        np.savetxt("loss_history.txt", numpy_loss_history, delimiter=",")
+        np.savetxt("loss_history.txt", numpy_loss_history, delimiter=',')
 
     def plot_accuracy_graph(self):
         plt.plot(self.history_.history['acc'])

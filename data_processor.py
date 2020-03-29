@@ -242,15 +242,16 @@ class TweetFrame(object):
     
     def __build_experiment_directory(self):
         # Prepare for NNs. 
-        for exp in EXPERIMENTS:
-            path = NN_RESULT_DIR + exp + '/'
-            if not os.path.exists(path):
-                try:
-                    os.makedirs(path)
-                except:
-                    print(f'Cannot create directory at path: {path} ')
-                    print(f'Exiting Program...')
-                    sys.exit()   
+        for sym in SYMBOLS:
+            for exp in EXPERIMENTS:
+                path = NN_RESULT_DIR + exp + '/' + sym + '/'
+                if not os.path.exists(path):
+                    try:
+                        os.makedirs(path)
+                    except:
+                        print(f'Cannot create directory at path: {path} ')
+                        print(f'Exiting Program...')
+                        sys.exit()   
 
     def __determine_tweet_sentiment(self):
         POS_SENTIMENT = 1
@@ -268,6 +269,7 @@ class TweetFrame(object):
             neg_values.append(sentiment[NEG_SENTIMENT])
 
         return pos_values, neg_values
-
-data = TweetFrame('AAPL')
-data.print_tweets_statistics()
+        
+for sym in SYMBOLS:
+    data = TweetFrame(sym)
+    data.print_tweets_statistics()

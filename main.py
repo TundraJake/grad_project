@@ -7,7 +7,7 @@ import keras
 from keras.callbacks import ModelCheckpoint
 
 import sys
-
+import os
 import numpy as np
 
 from settings import * 
@@ -38,7 +38,7 @@ def build_training_test_sets(data):
 
     return training_set, test_set
 
-def build_FFNN(training_set, test_set, name, epochs, batch_size):
+def build_FFNN(training_set, test_set, sym, name, exp, epochs, batch_size):
     X_train = training_set[:, 0:-1]
     # print(X_train)
     # print("The shape is now: ", X_train.shape)
@@ -50,13 +50,13 @@ def build_FFNN(training_set, test_set, name, epochs, batch_size):
     Y_test = test_set[:, -1]
     # print('Y_test:', Y_test)
 
-    return FFNN(X_train, Y_train, X_test, Y_test, name, epochs, batch_size)
+    return FFNN(X_train, Y_train, X_test, Y_test, sym, name, exp, epochs, batch_size)
 
-def build_LSTM(training_set, test_set, name, epochs, batch_size):
+def build_LSTM(training_set, test_set, sym, name, exp, epochs, batch_size):
     X_train = training_set[:, 0:-1]
     # reshape input to be 3D [samples, timesteps, features]
     X_train = np.reshape(X_train, (X_train.shape[0], 1, X_train.shape[1]) )
-    print(X_train.shape)
+    # print(X_train.shape)
     Y_train = training_set[:, -1]
 
     X_test = test_set[:, 0:-1]
@@ -64,29 +64,35 @@ def build_LSTM(training_set, test_set, name, epochs, batch_size):
     X_test = np.reshape(X_test, (X_test.shape[0], 1, X_test.shape[1]) )
     Y_test = test_set[:, -1]
 
-    return LSTMNN(X_train, Y_train, X_test, Y_test, name, epochs, batch_size)
+    return LSTMNN(X_train, Y_train, X_test, Y_test, sym, name, exp, epochs, batch_size) 
 
-def build_and_train_nns():
-    symbol = 'AAPL'
-    data = np.load(POST_PROCESSING_DIR + symbol + '/' + 'data.npy')
-    training_set, test_set = build_training_test_sets(data)
-    experiment_name = '_close_sentiments'
+def load_data(sym, exp):
+    return POST_PROCESSING_DIR + sym + '/' + exp + '_data.npy'
 
+def build_nn_name(sym, name):
+    return sym + '_' + name
+
+def build_experiment(exp):
     networks = []
-    networks.append(build_FFNN(training_set, test_set, 'ffnn0' + experiment_name, 1000, 5))
-#     networks.append(build_FFNN(training_set, test_set, 'ffnn1', 50, 5))
-#     networks.append(build_FFNN(training_set, test_set, 'ffnn2', 250, 5))
-#     networks.append(build_FFNN(training_set, test_set, 'ffnn3', 400, 5))
-    networks.append(build_LSTM(training_set, test_set, 'lstm0' + experiment_name, 10, 5))
-    networks.append(build_LSTM(training_set, test_set, 'lstm1' + experiment_name, 50, 5))
-    networks.append(build_LSTM(training_set, test_set, 'lstm2' + experiment_name, 100, 5))
-    networks.append(build_LSTM(training_set, test_set, 'lstm3' + experiment_name, 500, 5))
-    
-    train_networks(networks)
+
+    for sym in SYMBOLS:
+        data = np.load(load_data(sym, exp))
+        training_set, test_set = build_training_test_sets(data)
+        # print(training_set)
+        networks.append(build_FFNN(training_set, test_set, sym, 'ffnn0', exp, 10, 5))
+        networks.append(build_FFNN(training_set, test_set, sym, 'ffnn1', exp, 10, 5))
+        # networks.append(build_LSTM(training_set, test_set, sym, 'lstm0', exp, 10, 5))
+        # networks.append(build_LSTM(training_set, test_set, sym, 'lstm1', exp, 50, 5))
+
+        train_networks(networks)
+        networks = []
+
+def run_experiments():
+    for exp in EXPERIMENTS:
+        build_experiment(exp)
 
 def main():
-    build_and_train_nns() 
+    run_experiments() 
     
-
 if __name__ == "__main__":
     main()

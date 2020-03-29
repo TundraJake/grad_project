@@ -26,4 +26,4 @@ EXPERIMENTS = {
                         'next_day_close'],
 }
 
-SYMBOLS = ['AAPL']
+SYMBOLS = ['AAPL', 'ABB']

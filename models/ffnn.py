@@ -9,8 +9,8 @@ import numpy as np
 
 class FFNN(Neural_Network_Base):
 
-    def __init__(self, X, Y, X_test, Y_test, name, epochs, batch_size):
-        super().__init__(X, Y, X_test, Y_test, name, epochs, batch_size)
+    def __init__(self, X, Y, X_test, Y_test, sym, name, exp, epochs, batch_size):
+        super().__init__(X, Y, X_test, Y_test, sym, name, exp, epochs, batch_size)
         self.model = self.__build_model()
 
     def __build_model(self):
@@ -30,16 +30,6 @@ class FFNN(Neural_Network_Base):
         self.summary()
         self.history_ = self.model.fit(self.get_x_training_set(), self.get_y_training_set(), 
                         epochs=self.get_epochs(), batch_size=self.get_batch_size(), verbose=DISPLAY_TRAINING_PROGRESS)
-
-    def plot_loss_graph(self):
-        plt.plot(self.history_.history['loss'])
-        # plt.plot(self.history_.history['val_loss'])
-        plt.title('model loss')
-        plt.ylabel('loss')
-        plt.xlabel('epoch')
-        plt.legend(['train', 'test'], loc='upper left')
-        plt.show()
-        # print("%s: %.2f%%" % (self.model.metrics_names[1], scores
 
     def write_history_to_file(self):
         numpy_loss_history = np.array(loss_history)

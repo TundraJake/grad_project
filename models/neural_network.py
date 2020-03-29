@@ -10,13 +10,17 @@ import numpy.random as npr
 import numpy as np
 import nltk
 
+from sklearn.preprocessing import MinMaxScaler
+
 from settings import *
 
 class Neural_Network_Base(object):
 
-    def __init__(self, X, Y, X_test, Y_test, name, epochs, batch_size):
+    def __init__(self, X, Y, X_test, Y_test, sym, name, exp, epochs, batch_size):
 
         self.__name_ = name
+        self.__exp_ = exp
+        self.__symbol = sym
         self.x_train_ = X
         # print("X training shape: ", self.x_train_.shape)
         self.y_train_ = Y
@@ -31,6 +35,21 @@ class Neural_Network_Base(object):
         self.__batch_size_ = batch_size
 
         self.history_ = None
+        self.__min_max_scalar = MinMaxScaler()
+        self.__fit_data()
+    
+    def __fit_data(self):
+        data = np.load(POST_PROCESSING_DIR + self.get_symbol() + '/' + self.get_experiment_name() + '_data.npy')
+        self.__min_max_scalar.fit(data)
+
+    def get_symbol(self):
+        return self.__symbol
+
+    def get_experiment_name(self):
+        return self.__exp_
+
+    def get_save_location(self):
+        return NN_RESULT_DIR + self.get_experiment_name() + '/' + self.get_symbol() + '/'
 
     def get_batch_size(self):
         return self.__batch_size_
@@ -56,7 +75,7 @@ class Neural_Network_Base(object):
     def predict(self):
         predictions = self.model.predict(self.x_test_)
         real_stock_price = self.y_test_
-
+        real_stock_price = self.__min_max_scalar.inverse_transform(real_stock_price)
         #all_days = np.concatenate([self.y_train_,self.y_test_])
         all_days = self.y_test_
 
@@ -67,7 +86,7 @@ class Neural_Network_Base(object):
         plt.xlabel('Trading Day')
         plt.ylabel('Price ($)')
         plt.legend()
-        plt.savefig(NN_RESULT_DIR + self.get_name())
+        plt.savefig(self.get_save_figure_location())
         plt.clf()
 
     def summary(self):
@@ -89,29 +108,32 @@ class Neural_Network_Base(object):
     def load_model(self, filename):
         self.model.load_weights(filename)
 
-    def plot_accuracy(self):
-        plt.plot(self.history_.history['acc'])
-        plt.plot(self.history_.history['val_acc'])
-        plt.title('model accuracy')
+    def get_save_figure_location(self):
+        return self.get_save_location() + self.get_name()
+
+    def plot_accuracy_graph(self):
+        hist = self.get_history()
+        plt.plot(hist['acc'])
+        plt.plot(hist['val_acc'])
+        plt.title('Model Accuracy')
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.savefig(NN_RESULT_DIR + self.get_name() + '/_loss.png')
-        plt.show()
+        plt.savefig(self.get_save_figure_location() + '_acc.png')
         plt.clf()
 
     def plot_loss_history_graph(self):
         hist = self.get_history()
         plt.plot(hist['loss'])
-        plt.title('model loss')
+        plt.title('Model Loss')
         plt.ylabel('loss')
         plt.xlabel('epoch')
-        plt.legend(['train', 'test'], loc='upper left')
-        plt.savefig(NN_RESULT_DIR + self.get_name() + '_loss.png')
+        plt.savefig(self.get_save_figure_location() + '_loss.png')
         plt.clf()
 
     def evaluate(self):
         scores = self.model.evaluate(self.x_test_, self.y_test_)
         print("Model Metrics: ", self.model.metrics_names)
         print("Scores: ", scores)
-        self.plot_loss_history_graph()    
+        self.plot_loss_history_graph() 
+        # self.plot_accuracy_graph()  
