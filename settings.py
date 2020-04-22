@@ -17,13 +17,22 @@ EXPERIMENTS = {
                                 'daily_neg_sent_avg',
                                 'Close',
                                 'next_day_close'],
+
     'sentiments_with_open': ['daily_pos_sent_avg', 
                                 'daily_neg_sent_avg',
                                 'Open',
                                 'next_day_close'],
+
     'sentiments_only': ['daily_pos_sent_avg', 
                         'daily_neg_sent_avg',
+                        'movements',
                         'next_day_close'],
+
+    'positive_sentiment_close': ['daily_pos_sent_avg',
+                                'Close',
+                                'next_day_close'],
+    'close_only': ['Close',
+                    'next_day_close']
 }
 
-SYMBOLS = ['AAPL', 'ABB']
+SYMBOLS = ['AMZN']

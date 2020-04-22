@@ -38,34 +38,6 @@ def build_training_test_sets(data):
 
     return training_set, test_set
 
-def build_FFNN(training_set, test_set, sym, name, exp, epochs, batch_size):
-    X_train = training_set[:, 0:-1]
-    # print(X_train)
-    # print("The shape is now: ", X_train.shape)
-    Y_train = training_set[:, -1]
-    # print(Y_train)
-    # print('Y_train', Y_train)
-
-    X_test = test_set[:, 0:-1]
-    Y_test = test_set[:, -1]
-    # print('Y_test:', Y_test)
-
-    return FFNN(X_train, Y_train, X_test, Y_test, sym, name, exp, epochs, batch_size)
-
-def build_LSTM(training_set, test_set, sym, name, exp, epochs, batch_size):
-    X_train = training_set[:, 0:-1]
-    # reshape input to be 3D [samples, timesteps, features]
-    X_train = np.reshape(X_train, (X_train.shape[0], 1, X_train.shape[1]) )
-    # print(X_train.shape)
-    Y_train = training_set[:, -1]
-
-    X_test = test_set[:, 0:-1]
-    # reshape input to be 3D [samples, timesteps, features]
-    X_test = np.reshape(X_test, (X_test.shape[0], 1, X_test.shape[1]) )
-    Y_test = test_set[:, -1]
-
-    return LSTMNN(X_train, Y_train, X_test, Y_test, sym, name, exp, epochs, batch_size) 
-
 def load_data(sym, exp):
     return POST_PROCESSING_DIR + sym + '/' + exp + '_data.npy'
 
@@ -78,11 +50,11 @@ def build_experiment(exp):
     for sym in SYMBOLS:
         data = np.load(load_data(sym, exp))
         training_set, test_set = build_training_test_sets(data)
-        # print(training_set)
-        networks.append(build_FFNN(training_set, test_set, sym, 'ffnn0', exp, 10, 5))
-        networks.append(build_FFNN(training_set, test_set, sym, 'ffnn1', exp, 10, 5))
-        # networks.append(build_LSTM(training_set, test_set, sym, 'lstm0', exp, 10, 5))
-        # networks.append(build_LSTM(training_set, test_set, sym, 'lstm1', exp, 50, 5))
+
+        networks.append(FFNN(training_set, test_set, sym, 'ffnn5', exp, 300, 10))
+        networks.append(LSTMNN(training_set, test_set, sym, 'lstm4', exp, 500, 10))
+
+        # networks.append(LSTMNN(training_set, test_set, sym, 'test', exp, 10, 10))
 
         train_networks(networks)
         networks = []

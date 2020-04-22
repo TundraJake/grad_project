@@ -3,6 +3,7 @@ from keras.preprocessing.text import text_to_word_sequence, one_hot
 from sklearn.preprocessing import MinMaxScaler
 from keras.utils import multi_gpu_model
 from keras.callbacks import ModelCheckpoint
+from keras.utils import plot_model
 import keras
 from keras.models import Sequential
 import matplotlib.pyplot as plt 
@@ -10,37 +11,47 @@ import numpy.random as npr
 import numpy as np
 import nltk
 
+
 from sklearn.preprocessing import MinMaxScaler
 
 from settings import *
 
-class Neural_Network_Base(object):
+class Neural_Network_Base:
 
-    def __init__(self, X, Y, X_test, Y_test, sym, name, exp, epochs, batch_size):
+    def __init__(self, training_set, testing_set, sym, name, exp, epochs, batch_size):
+
+        self.__training_set = training_set
+        self.__testing_set = testing_set
+
+        self.training_scaler = MinMaxScaler()
+        self.testing_scaler = MinMaxScaler()
+
+        self.__fit_data(training_set, testing_set)
 
         self.__name_ = name
         self.__exp_ = exp
         self.__symbol = sym
-        self.x_train_ = X
-        # print("X training shape: ", self.x_train_.shape)
-        self.y_train_ = Y
-        # print("Y training shape: ", self.y_train_.shape)
-
-        self.x_test_ = X_test
-        self.y_test_ = Y_test
-        # print("X test shape: ", self.x_test_.shape)
-        # print("Y test shape: ", self.y_test_.shape)
 
         self.__epochs_ = epochs
         self.__batch_size_ = batch_size
 
         self.history_ = None
-        self.__min_max_scalar = MinMaxScaler()
-        self.__fit_data()
     
-    def __fit_data(self):
-        data = np.load(POST_PROCESSING_DIR + self.get_symbol() + '/' + self.get_experiment_name() + '_data.npy')
-        self.__min_max_scalar.fit(data)
+    def __fit_data(self, training_set, testing_set):
+        self.set_training_set(self.training_scaler.fit_transform(self.get_training_set()))
+        self.set_testing_set(self.testing_scaler.fit_transform(self.get_testing_set()))
+
+    def set_training_set(self, data):
+        self.__training_set = data
+
+    def set_testing_set(self, data):
+        self.__testing_set = data
+
+    def get_training_set(self):
+        return self.__training_set
+
+    def get_testing_set(self):
+        return self.__testing_set
 
     def get_symbol(self):
         return self.__symbol
@@ -69,25 +80,51 @@ class Neural_Network_Base(object):
     def get_y_training_set(self):
         return self.y_train_
 
+    def get_x_test_set(self):
+        return self.x_test_
+
+    def get_y_test_set(self):
+        return self.y_test_
+
     def get_history(self):
         return self.history_.history
 
+    def scale_predictions(self, predictions):
+        pred = MinMaxScaler()
+        pred.min_, pred.scale_ = self.testing_scaler.min_[-1], self.testing_scaler.scale_[-1]
+        
+        return pred.inverse_transform(predictions)
+
+    def plot_price_differences(self, predictions, actual):
+        values = np.subtract(predictions[1:], actual[:-1])
+
+        plt.plot(values, color='green')
+        plt.title('Differences between Predictions and Actual Prices')
+        plt.xlabel('Trading Day')
+        plt.ylabel('Price Difference ($)')
+        plt.savefig(self.get_save_figure_location() + '_diff')
+        plt.clf()
+
     def predict(self):
-        predictions = self.model.predict(self.x_test_)
-        real_stock_price = self.y_test_
-        real_stock_price = self.__min_max_scalar.inverse_transform(real_stock_price)
-        #all_days = np.concatenate([self.y_train_,self.y_test_])
+        predictions = self.model.predict(self.get_x_test_set())
+        predictions = self.scale_predictions(predictions)
+
+        real_stock_prices = self.scale_predictions( self.y_test_.reshape(self.y_test_.shape[0], 1) )
         all_days = self.y_test_
 
-        plt.plot(all_days, color='blue', label='Actual Price')
-        plt.plot(range(len(all_days) - len(predictions), len(all_days)), predictions, color = 'red', label = 'Predicted Price')
+        # Review data before final...
+        plt.plot(real_stock_prices[:-2], color='blue', label='Actual Price')
+        plt.plot(predictions[1:], color = 'red', label = 'Predicted Price')
 
-        plt.title(self.get_name() + ' Performance w/' + str(self.__epochs_) + ' epochs')
+        plt.title(self.get_symbol() + ' Performance w/' + str(self.__epochs_) + ' epochs')
         plt.xlabel('Trading Day')
         plt.ylabel('Price ($)')
         plt.legend()
+
         plt.savefig(self.get_save_figure_location())
+
         plt.clf()
+        self.plot_price_differences(predictions, real_stock_prices)
 
     def summary(self):
         self.model.summary()
@@ -95,7 +132,7 @@ class Neural_Network_Base(object):
     def write_weights_to_h5(self):
         # serialize weights to HDF5
         self.model.save_weights(self.get_name() + "/_model.h5")
-        print("Saved model to disk")
+        print("Saved")
 
     def load_weights_from_h5(self):
         # Model needs to be built first
@@ -111,17 +148,6 @@ class Neural_Network_Base(object):
     def get_save_figure_location(self):
         return self.get_save_location() + self.get_name()
 
-    def plot_accuracy_graph(self):
-        hist = self.get_history()
-        plt.plot(hist['acc'])
-        plt.plot(hist['val_acc'])
-        plt.title('Model Accuracy')
-        plt.ylabel('accuracy')
-        plt.xlabel('epoch')
-        plt.legend(['train', 'test'], loc='upper left')
-        plt.savefig(self.get_save_figure_location() + '_acc.png')
-        plt.clf()
-
     def plot_loss_history_graph(self):
         hist = self.get_history()
         plt.plot(hist['loss'])
@@ -136,4 +162,6 @@ class Neural_Network_Base(object):
         print("Model Metrics: ", self.model.metrics_names)
         print("Scores: ", scores)
         self.plot_loss_history_graph() 
-        # self.plot_accuracy_graph()  
+
+    def plot_model(self):
+        plot_model(self.model, to_file=self.get_name() + '_' + self.get_experiment_name() + '.png', show_shapes=True)
