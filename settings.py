@@ -1,6 +1,3 @@
-DOTCSV = '.csv'
-DOTTXT = '.txt'
-
 DATA_DIR = './data/stocknet-dataset/'
 POST_PROCESSING_DIR = './data/post_processing/'
 RESULTS_DIR = './data/results/'
